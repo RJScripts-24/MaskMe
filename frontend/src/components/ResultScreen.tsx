@@ -1,5 +1,5 @@
 
-import { Shield, X, Check, Download, Upload, Eye, EyeOff } from 'lucide-react';
+import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ShieldResponse } from '../types/api';
 import { useState } from 'react';
@@ -75,6 +75,7 @@ function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, sub
 export default function ResultScreen({ originalImage, protectedImage, apiResponse, onTryAnother, onBack }: ResultScreenProps) {
   // State for X-Ray Mode toggle
   const [showNoise, setShowNoise] = useState(false);
+  const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -83,6 +84,57 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      setIsDownloadingReport(true);
+
+      // Get API base URL from environment or default to localhost
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      // Prepare the request data
+      const reportData = {
+        original_image: originalImage,
+        cloaked_image: protectedImage,
+        original_label: apiResponse.original_label,
+        cloaked_label: apiResponse.cloaked_label,
+        original_confidence: apiResponse.original_confidence,
+        cloaked_confidence: apiResponse.cloaked_confidence
+      };
+
+      // Send POST request to backend with full URL
+      const response = await fetch(`${API_BASE_URL}/api/v1/shield/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      // Get the PDF blob
+      const blob = await response.blob();
+
+      // Create a temporary URL and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `audit_report_${new Date().getTime()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      alert('Failed to generate security certificate. Please try again.');
+    } finally {
+      setIsDownloadingReport(false);
+    }
   };
 
   // Format confidence scores as percentages
@@ -299,7 +351,25 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               Download Protected Image
             </motion.button>
 
-            {/* SECONDARY BUTTON - Try Another */}
+            {/* SECONDARY BUTTON - Download Report */}
+            <motion.button
+              onClick={handleDownloadReport}
+              disabled={isDownloadingReport}
+              className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center border-2"
+              style={{ 
+                backgroundColor: isDownloadingReport ? '#F1F5F9' : '#FFFFFF', 
+                borderColor: isDownloadingReport ? '#CBD5E1' : '#16A34A',
+                color: isDownloadingReport ? '#94A3B8' : '#16A34A',
+                cursor: isDownloadingReport ? 'not-allowed' : 'pointer'
+              }}
+              whileHover={!isDownloadingReport ? { scale: 1.03 } : {}}
+              whileTap={!isDownloadingReport ? { scale: 0.97 } : {}}
+            >
+              <FileText className="w-5 h-5" strokeWidth={2} />
+              {isDownloadingReport ? 'Generating...' : '📄 Download Security Certificate'}
+            </motion.button>
+
+            {/* TERTIARY BUTTON - Try Another */}
             <motion.button
               onClick={onTryAnother}
               className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center border-2"
