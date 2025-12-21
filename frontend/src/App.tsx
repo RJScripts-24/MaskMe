@@ -754,16 +754,6 @@ export default function App() {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
         >
-          <motion.p 
-            className="mb-4" 
-            style={{ color: '#64748B' }}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Final Year Project • Your Name / University
-          </motion.p>
           <motion.div 
             className="flex justify-center gap-6"
             initial={{ opacity: 0, y: 10 }}

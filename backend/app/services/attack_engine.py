@@ -1,15 +1,20 @@
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
+from torchvision.models import ResNet50_Weights
 from PIL import Image
 from app.core.config import settings
 
 class AttackEngine:
     def __init__(self):
         self.device = torch.device(settings.DEVICE)
-        self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+        self.weights = ResNet50_Weights.IMAGENET1K_V1
+        self.model = models.resnet50(weights=self.weights)
         self.model.to(self.device)
         self.model.eval()
+        
+        # Get ImageNet class names
+        self.class_names = self.weights.meta["categories"]
         
         self.preprocess = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -52,12 +57,19 @@ class AttackEngine:
         
         perturbed_image = original_tensor + epsilon * sign_data_grad
         
-        cloaked_conf, _ = self._get_prediction(perturbed_image)
+        cloaked_conf, cloaked_idx = self._get_prediction(perturbed_image)
         final_image = self._deprocess(perturbed_image)
+        
+        # Get class names
+        original_idx = target_label.item()
+        original_label = self.class_names[original_idx]
+        cloaked_label = self.class_names[cloaked_idx]
         
         return {
             "original_confidence": round(orig_conf.item(), 4),
             "cloaked_confidence": round(cloaked_conf, 4),
+            "original_label": original_label,
+            "cloaked_label": cloaked_label,
             "cloaked_image": final_image
         }
 

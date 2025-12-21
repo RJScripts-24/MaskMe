@@ -14,7 +14,10 @@ export interface ShieldResponse {
   status: string;
   original_confidence: number;
   cloaked_confidence: number;
+  original_label: string;
+  cloaked_label: string;
   cloaked_image: string; // base64 encoded image
+  noise_map?: string; // base64 encoded noise image for X-Ray Mode
 }
 
 // Error types

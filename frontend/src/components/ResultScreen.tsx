@@ -1,7 +1,8 @@
 
-import { Shield, X, Check, Download, Upload } from 'lucide-react';
+import { Shield, X, Check, Download, Upload, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ShieldResponse } from '../types/api';
+import { useState } from 'react';
 
 // Shared color constants
 const COLOR_PRIMARY = '#2563EB';
@@ -40,7 +41,7 @@ interface StatusCardProps {
   iconBg: string;
   title: string;
   titleColor: string;
-  subtitle: string;
+  subtitle: React.ReactNode;
   subtitleColor: string;
   delay: number;
 }
@@ -65,13 +66,16 @@ function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, sub
       </motion.div>
       <div>
         <p className="text-lg" style={{ color: titleColor, fontWeight: 600 }}>{title}</p>
-        <p className="text-sm" style={{ color: subtitleColor }}>{subtitle}</p>
+        <div className="text-sm" style={{ color: subtitleColor }}>{subtitle}</div>
       </div>
     </motion.div>
   );
 }
 
 export default function ResultScreen({ originalImage, protectedImage, apiResponse, onTryAnother, onBack }: ResultScreenProps) {
+  // State for X-Ray Mode toggle
+  const [showNoise, setShowNoise] = useState(false);
+
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = protectedImage;
@@ -188,30 +192,57 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                 style={{ borderColor: COLOR_CARD_BORDER }}
                 aria-label="Masked Image (Protected)"
               >
-                <div className="p-4 border-b" style={{ borderColor: COLOR_CARD_BORDER }}>
+                <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: COLOR_CARD_BORDER }}>
                   <h2 className="text-lg" style={{ color: COLOR_HEADER_TEXT }}>
-                    Masked Image (Protected)
+                    {showNoise ? 'Noise Pattern (X-Ray Mode)' : 'Masked Image (Protected)'}
                   </h2>
+                  {apiResponse.noise_map && (
+                    <motion.button
+                      onClick={() => setShowNoise(!showNoise)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors text-sm"
+                      style={{ 
+                        backgroundColor: showNoise ? COLOR_PRIMARY : '#FFFFFF',
+                        borderColor: showNoise ? COLOR_PRIMARY : '#CBD5E1',
+                        color: showNoise ? '#FFFFFF' : '#64748B'
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {showNoise ? (
+                        <>
+                          <EyeOff className="w-4 h-4" strokeWidth={2} />
+                          <span>Hide Noise</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" strokeWidth={2} />
+                          <span>X-Ray Mode</span>
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                 </div>
                 <div
                   className="p-6 flex items-center justify-center relative"
                   style={{ backgroundColor: COLOR_ORIG_BG, minHeight: '400px' }}
                 >
                   <img
-                    src={protectedImage}
-                    alt="Protected"
+                    src={showNoise && apiResponse.noise_map ? `data:image/png;base64,${apiResponse.noise_map}` : protectedImage}
+                    alt={showNoise ? "Noise Pattern" : "Protected"}
                     className="max-w-full h-auto rounded-lg"
                   />
-                  <motion.div
-                    className="absolute top-3 right-3 px-3 py-1.5 rounded-full flex items-center gap-2"
-                    style={{ backgroundColor: COLOR_PRIMARY }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    <Shield className="w-4 h-4" style={{ color: '#FFFFFF' }} strokeWidth={2} />
-                    <span className="text-sm" style={{ color: '#FFFFFF' }}>Protected</span>
-                  </motion.div>
+                  {!showNoise && (
+                    <motion.div
+                      className="absolute top-3 right-3 px-3 py-1.5 rounded-full flex items-center gap-2"
+                      style={{ backgroundColor: COLOR_PRIMARY }}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <Shield className="w-4 h-4" style={{ color: '#FFFFFF' }} strokeWidth={2} />
+                      <span className="text-sm" style={{ color: '#FFFFFF' }}>Protected</span>
+                    </motion.div>
+                  )}
                 </div>
               </section>
             </motion.div>
@@ -226,7 +257,13 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               iconBg={COLOR_STATUS1_ICON_BG}
               title={`AI Confidence: ${cloakedConfidencePercent}%`}
               titleColor={COLOR_STATUS1_TEXT}
-              subtitle={`Reduced from ${originalConfidencePercent}% (${protectionEffectiveness}% reduction)`}
+              subtitle={
+                <>
+                  <div className="font-semibold mb-1">Detected as: {apiResponse.cloaked_label}</div>
+                  <div>Reduced from {originalConfidencePercent}% ({protectionEffectiveness}% reduction)</div>
+                  <div className="text-xs mt-1 opacity-75">Original: {apiResponse.original_label}</div>
+                </>
+              }
               subtitleColor={COLOR_STATUS1_SUB}
               delay={0.5}
             />
