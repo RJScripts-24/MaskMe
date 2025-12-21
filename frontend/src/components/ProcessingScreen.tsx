@@ -7,11 +7,12 @@ import { ShieldResponse } from '../types/api';
 interface ProcessingScreenProps {
   file: File;
   epsilon?: number;
+  attackMethod?: string;
   onComplete: (response: ShieldResponse) => void;
   onError: (error: string) => void;
 }
 
-export default function ProcessingScreen({ file, epsilon = 0.03, onComplete, onError }: ProcessingScreenProps) {
+export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = "FGSM", onComplete, onError }: ProcessingScreenProps) {
   const [processingStatus, setProcessingStatus] = useState<string>('Uploading image...');
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, onComplete, onE
         setProcessingStatus('Uploading image...');
         
         // Call the actual API
-        const response = await cloakImage(file, epsilon);
+        const response = await cloakImage(file, epsilon, attackMethod);
         
         setProcessingStatus('Protection applied!');
         
@@ -47,7 +48,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, onComplete, onE
     };
 
     processImage();
-  }, [file, epsilon, onComplete, onError]);
+  }, [file, epsilon, attackMethod, onComplete, onError]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F8FAFC' }}>

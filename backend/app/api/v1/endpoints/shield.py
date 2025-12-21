@@ -7,11 +7,15 @@ from app.services.attack_engine import attack_engine
 router = APIRouter()
 
 @router.post("/cloak", response_model=ShieldResponse)
-async def cloak_image(file: UploadFile = File(...), epsilon: float = Form(0.03)):
+async def cloak_image(
+    file: UploadFile = File(...), 
+    epsilon: float = Form(0.03),
+    attack_type: str = Form("FGSM")
+):
     try:
         original_image = await read_image_file(file)
         
-        result = attack_engine.process(original_image, epsilon)
+        result = attack_engine.process(original_image, epsilon, method=attack_type)
         
         cloaked_b64 = image_to_base64(result["cloaked_image"])
         

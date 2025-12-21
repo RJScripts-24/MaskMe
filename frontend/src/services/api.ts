@@ -24,15 +24,18 @@ export class ApiError extends Error {
  * POST /api/v1/shield/cloak
  * @param file - Image file to protect (JPEG/PNG)
  * @param epsilon - Perturbation strength (default: 0.03)
+ * @param attackType - Attack algorithm: "FGSM" or "PGD" (default: "FGSM")
  * @returns ShieldResponse with protected image and confidence scores
  */
 export async function cloakImage(
   file: File,
-  epsilon: number = 0.03
+  epsilon: number = 0.03,
+  attackType: string = "FGSM"
 ): Promise<ShieldResponse> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('epsilon', epsilon.toString());
+  formData.append('attack_type', attackType);
 
   const url = new URL(API_ENDPOINTS.CLOAK_IMAGE, API_BASE_URL);
 

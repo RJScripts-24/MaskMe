@@ -21,6 +21,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
   const [showResultScreen, setShowResultScreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [epsilon, setEpsilon] = useState<number>(0.03);
+  const [attackMethod, setAttackMethod] = useState<string>("FGSM");
 
   // If result screen should be shown
   if (showResultScreen && uploadedImage && protectedImage && apiResponse) {
@@ -49,6 +50,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
       <ProcessingScreen 
         file={uploadedFile}
         epsilon={epsilon}
+        attackMethod={attackMethod}
         onComplete={(response) => {
           setShowProcessingScreen(false);
           setApiResponse(response);
@@ -309,6 +311,45 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           </div>
                           <p className="text-xs mt-2" style={{ color: '#64748B' }}>
                             Higher values provide stronger protection but may be more noticeable
+                          </p>
+                        </motion.div>
+                      )}
+                      
+                      {/* Attack Method Dropdown */}
+                      {!protectedImage && (
+                        <motion.div
+                          className="mb-6 p-4 rounded-lg"
+                          style={{ 
+                            backgroundColor: '#F8FAFC',
+                            border: '1px solid #E2E8F0'
+                          }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15 }}
+                        >
+                          <label 
+                            htmlFor="attack-method" 
+                            className="text-sm font-medium mb-3 block"
+                            style={{ color: '#334155' }}
+                          >
+                            Attack Algorithm
+                          </label>
+                          <select
+                            id="attack-method"
+                            value={attackMethod}
+                            onChange={(e) => setAttackMethod(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border appearance-none cursor-pointer transition-colors"
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              borderColor: '#E2E8F0',
+                              color: '#0F172A'
+                            }}
+                          >
+                            <option value="FGSM">⚡ FGSM (Speed)</option>
+                            <option value="PGD">💪 PGD (Power)</option>
+                          </select>
+                          <p className="text-xs mt-2" style={{ color: '#64748B' }}>
+                            FGSM is fast (single-step), PGD is more powerful (iterative)
                           </p>
                         </motion.div>
                       )}

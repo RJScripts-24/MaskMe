@@ -38,24 +38,96 @@ class AttackEngine:
         
         return transforms.ToPILImage()(tensor.cpu().squeeze(0))
 
-    def process(self, image: Image.Image, epsilon: float):
+    def _pgd_attack(self, image: Image.Image, epsilon: float, steps: int = 10, alpha: float = 0.01):
+        """
+        Projected Gradient Descent (PGD) attack - iterative variant of FGSM.
+        More powerful but slower than FGSM.
+        
+        Args:
+            image: Input PIL image
+            epsilon: Maximum perturbation magnitude
+            steps: Number of iterations (default 10)
+            alpha: Step size per iteration (default 0.01)
+        """
         original_tensor = self.preprocess(image).unsqueeze(0).to(self.device)
-        original_tensor.requires_grad = True
-
-        output = self.model(original_tensor)
-        probabilities = torch.nn.functional.softmax(output[0], dim=0)
-        orig_conf, target_label = torch.max(probabilities, 0)
+        
+        # Clone the tensor for perturbation
+        perturbed_image = original_tensor.clone().detach()
+        perturbed_image.requires_grad = True
+        
+        # Get the original prediction target
+        with torch.no_grad():
+            output = self.model(original_tensor)
+            probabilities = torch.nn.functional.softmax(output[0], dim=0)
+            _, target_label = torch.max(probabilities, 0)
         
         criterion = nn.CrossEntropyLoss()
-        loss = criterion(output, torch.tensor([target_label]).to(self.device))
         
-        self.model.zero_grad()
-        loss.backward()
+        # Iterative attack loop
+        for step in range(steps):
+            perturbed_image.requires_grad = True
+            
+            output = self.model(perturbed_image)
+            loss = criterion(output, torch.tensor([target_label]).to(self.device))
+            
+            self.model.zero_grad()
+            loss.backward()
+            
+            # Apply small perturbation in gradient direction
+            data_grad = perturbed_image.grad.data
+            sign_data_grad = data_grad.sign()
+            
+            with torch.no_grad():
+                perturbed_image = perturbed_image + alpha * sign_data_grad
+                
+                # Project back to epsilon ball (clamp total perturbation)
+                perturbation = perturbed_image - original_tensor
+                perturbation = torch.clamp(perturbation, -epsilon, epsilon)
+                perturbed_image = original_tensor + perturbation
+                
+                # Ensure valid image range after denormalization
+                perturbed_image = perturbed_image.detach()
         
-        data_grad = original_tensor.grad.data
-        sign_data_grad = data_grad.sign()
+        return perturbed_image, target_label
+
+    def process(self, image: Image.Image, epsilon: float, method: str = "FGSM"):
+        """
+        Process image with adversarial attack.
         
-        perturbed_image = original_tensor + epsilon * sign_data_grad
+        Args:
+            image: Input PIL image
+            epsilon: Perturbation magnitude
+            method: Attack method - "FGSM" (fast) or "PGD" (powerful)
+        """
+        if method == "PGD":
+            # Use PGD attack (iterative, more powerful)
+            perturbed_image, target_label = self._pgd_attack(image, epsilon)
+            
+            # Get original confidence
+            original_tensor = self.preprocess(image).unsqueeze(0).to(self.device)
+            with torch.no_grad():
+                output = self.model(original_tensor)
+                probabilities = torch.nn.functional.softmax(output[0], dim=0)
+                orig_conf, _ = torch.max(probabilities, 0)
+        else:
+            # Use FGSM attack (fast, single-step)
+            original_tensor = self.preprocess(image).unsqueeze(0).to(self.device)
+            original_tensor.requires_grad = True
+
+            output = self.model(original_tensor)
+            probabilities = torch.nn.functional.softmax(output[0], dim=0)
+            orig_conf, target_label = torch.max(probabilities, 0)
+            
+            criterion = nn.CrossEntropyLoss()
+            loss = criterion(output, torch.tensor([target_label]).to(self.device))
+            
+            self.model.zero_grad()
+            loss.backward()
+            
+            data_grad = original_tensor.grad.data
+            sign_data_grad = data_grad.sign()
+            
+            perturbed_image = original_tensor + epsilon * sign_data_grad
         
         cloaked_conf, cloaked_idx = self._get_prediction(perturbed_image)
         final_image = self._deprocess(perturbed_image)
