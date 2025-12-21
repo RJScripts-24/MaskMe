@@ -43,3 +43,13 @@ htmlcov/
 # Docker
 *.pid
 docker-compose.override.yml
+
+# Scripts (binaries or OS-specific)
+scripts/*.sh
+scripts/*.bat
+
+# Miscellaneous
+*.swp
+*.swo
+*.bak
+*.tmp
