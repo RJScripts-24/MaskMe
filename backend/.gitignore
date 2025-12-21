@@ -1,5 +1,45 @@
-# Excludes venv, __pycache__, .env, /data
-venv/
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
 .env
+.env.*
+
+# Data and models (local storage)
 data/
+data/models/
+data/temp/
+
+# Test outputs and sample assets
+tests/fixtures/*.jpg
+.pytest_cache/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# Docker
+*.pid
+docker-compose.override.yml
