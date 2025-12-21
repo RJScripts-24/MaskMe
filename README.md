@@ -1,5 +1,5 @@
 # 🛡️ Face-Shield: Adversarial Identity Protection Layer
-> **Part of the Trilokan Intelligence Protocol**
+> 
 
 ![Project Banner](https://img.shields.io/badge/Status-Active-success) ![Python](https://img.shields.io/badge/Backend-FastAPI-blue) ![Frontend](https://img.shields.io/badge/Frontend-Next.js_14-black) ![AI](https://img.shields.io/badge/Model-ResNet50-orange)
 
