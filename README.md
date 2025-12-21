@@ -19,15 +19,7 @@ Face-Shield generates **Adversarial Examples**—input images with mathematicall
 
 ---
 
-## 📸 Proof of Defenses (Screenshots)
 
-### 1. The "High-Confidence Jailbreak"
-*Successfully forcing ResNet50 to misclassify a Human as a "Bikini" with 100% certainty.*
-![Main Interface](YOUR_SCREENSHOT_LINK_HERE.png)
-
-### 2. X-Ray Vision (Explainable AI)
-*Visualizing the actual pixel-level noise pattern (amplified 10x) used to break the model.*
-![X-Ray Mode](YOUR_NOISE_MAP_SCREENSHOT.png)
 
 ---
 
@@ -83,7 +75,7 @@ Generates a professional **PDF Audit Report** containing:
 
 ### 1. Ignite the Intelligence Layer (Backend)
 ```bash
-cd face-shield-backend
+cd backend
 python -m venv venv
 # Windows
 .\venv\Scripts\activate
@@ -91,4 +83,4 @@ python -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
-python main.py
+uvicorn app.main:app --reload
