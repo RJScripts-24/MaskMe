@@ -1,8 +1,9 @@
 
-import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText } from 'lucide-react';
+import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText, Zap, MessageCircle, Wind, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ShieldResponse } from '../types/api';
 import { useState } from 'react';
+import { testRobustness } from '../services/api';
 
 // Shared color constants
 const COLOR_PRIMARY = '#2563EB';
@@ -76,6 +77,16 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
   // State for X-Ray Mode toggle
   const [showNoise, setShowNoise] = useState(false);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  
+  // State for Robustness Lab
+  const [testResult, setTestResult] = useState<{
+    type: string;
+    label: string;
+    confidence: number;
+    image: string;
+    survived: boolean;
+  } | null>(null);
+  const [isTestingRobustness, setIsTestingRobustness] = useState(false);
 
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -134,6 +145,38 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
       alert('Failed to generate security certificate. Please try again.');
     } finally {
       setIsDownloadingReport(false);
+    }
+  };
+
+  const handleRobustnessTest = async (testType: 'jpeg' | 'blur' | 'resize') => {
+    try {
+      setIsTestingRobustness(true);
+      setTestResult(null);
+      
+      // Convert base64 protected image to File
+      const response = await fetch(protectedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'cloaked-image.png', { type: 'image/png' });
+      
+      // Call the robustness test API
+      const result = await testRobustness(file, testType);
+      
+      // Check if attack survived (label is still different from original)
+      const survived = result.new_label !== apiResponse.original_label;
+      
+      setTestResult({
+        type: testType,
+        label: result.new_label,
+        confidence: result.new_confidence,
+        image: `data:image/png;base64,${result.transformed_image}`,
+        survived
+      });
+      
+    } catch (error) {
+      console.error('Robustness test failed:', error);
+      alert('Failed to run robustness test. Please try again.');
+    } finally {
+      setIsTestingRobustness(false);
     }
   };
 
@@ -380,6 +423,156 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               <Upload className="w-5 h-5" strokeWidth={2} />
               Try Another Image
             </motion.button>
+          </motion.div>
+
+          {/* Robustness Lab Section */}
+          <motion.div
+            className="mt-12 max-w-5xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <div className="p-6 rounded-xl border-2" style={{ backgroundColor: COLOR_CARD_BG, borderColor: '#A78BFA' }}>
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <Zap className="w-6 h-6" style={{ color: '#7C3AED' }} strokeWidth={2} />
+                <h3 className="text-xl font-semibold" style={{ color: COLOR_HEADER_TEXT }}>
+                  🧪 Robustness Lab - Simulate Real World Conditions
+                </h3>
+              </div>
+              
+              <p className="mb-6" style={{ color: COLOR_SUBTEXT }}>
+                Test if your attack survives real-world transformations like compression, blur, and resize operations.
+              </p>
+
+              {/* Test Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <motion.button
+                  onClick={() => handleRobustnessTest('jpeg')}
+                  disabled={isTestingRobustness}
+                  className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
+                  style={{
+                    backgroundColor: testResult?.type === 'jpeg' ? '#FEF3C7' : '#FFFFFF',
+                    borderColor: testResult?.type === 'jpeg' ? '#F59E0B' : '#CBD5E1',
+                    color: COLOR_HEADER_TEXT,
+                    cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
+                    opacity: isTestingRobustness ? 0.6 : 1
+                  }}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#F59E0B' } : {}}
+                  whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
+                >
+                  <MessageCircle className="w-6 h-6" style={{ color: '#F59E0B' }} strokeWidth={2} />
+                  <span className="font-semibold">📱 Simulate WhatsApp</span>
+                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>JPEG Compression</span>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => handleRobustnessTest('blur')}
+                  disabled={isTestingRobustness}
+                  className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
+                  style={{
+                    backgroundColor: testResult?.type === 'blur' ? '#E0E7FF' : '#FFFFFF',
+                    borderColor: testResult?.type === 'blur' ? '#6366F1' : '#CBD5E1',
+                    color: COLOR_HEADER_TEXT,
+                    cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
+                    opacity: isTestingRobustness ? 0.6 : 1
+                  }}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#6366F1' } : {}}
+                  whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
+                >
+                  <Wind className="w-6 h-6" style={{ color: '#6366F1' }} strokeWidth={2} />
+                  <span className="font-semibold">🌫️ Simulate Motion</span>
+                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>Gaussian Blur</span>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => handleRobustnessTest('resize')}
+                  disabled={isTestingRobustness}
+                  className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
+                  style={{
+                    backgroundColor: testResult?.type === 'resize' ? '#DBEAFE' : '#FFFFFF',
+                    borderColor: testResult?.type === 'resize' ? '#3B82F6' : '#CBD5E1',
+                    color: COLOR_HEADER_TEXT,
+                    cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
+                    opacity: isTestingRobustness ? 0.6 : 1
+                  }}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#3B82F6' } : {}}
+                  whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
+                >
+                  <Globe className="w-6 h-6" style={{ color: '#3B82F6' }} strokeWidth={2} />
+                  <span className="font-semibold">🌐 Simulate Social Upload</span>
+                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>Downscale/Upscale</span>
+                </motion.button>
+              </div>
+
+              {/* Test Results */}
+              {isTestingRobustness && (
+                <motion.div
+                  className="p-4 rounded-lg text-center"
+                  style={{ backgroundColor: '#F1F5F9' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <p style={{ color: COLOR_SUBTEXT }}>Running test...</p>
+                </motion.div>
+              )}
+
+              {testResult && !isTestingRobustness && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-5 rounded-lg border-2"
+                  style={{
+                    backgroundColor: testResult.survived ? COLOR_STATUS2_BG : COLOR_STATUS1_BG,
+                    borderColor: testResult.survived ? COLOR_STATUS2_BORDER : COLOR_STATUS1_BORDER
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      {testResult.survived ? (
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLOR_STATUS2_ICON_BG }}>
+                          <Check className="w-6 h-6" style={{ color: COLOR_STATUS2_ICON }} strokeWidth={2.5} />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLOR_STATUS1_ICON_BG }}>
+                          <X className="w-6 h-6" style={{ color: COLOR_STATUS1_ICON }} strokeWidth={2.5} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold mb-2" style={{ color: testResult.survived ? COLOR_STATUS2_TEXT : COLOR_STATUS1_TEXT }}>
+                        {testResult.survived ? '✅ Attack Survived (Robust)' : '❌ Attack Failed (Reverted)'}
+                      </h4>
+                      <div className="text-sm mb-3" style={{ color: COLOR_SUBTEXT }}>
+                        <p className="mb-1">
+                          <strong>After Simulation:</strong> {testResult.label} ({(testResult.confidence * 100).toFixed(1)}%)
+                        </p>
+                        <p>
+                          <strong>Original Label:</strong> {apiResponse.original_label}
+                        </p>
+                      </div>
+                      {testResult.survived ? (
+                        <p className="text-sm" style={{ color: COLOR_STATUS2_SUB }}>
+                          The adversarial attack is robust and survived the {testResult.type === 'jpeg' ? 'compression' : testResult.type === 'blur' ? 'blur' : 'resize'} transformation!
+                        </p>
+                      ) : (
+                        <p className="text-sm" style={{ color: COLOR_STATUS1_SUB }}>
+                          The attack was removed by the {testResult.type === 'jpeg' ? 'compression' : testResult.type === 'blur' ? 'blur' : 'resize'} transformation. AI can now detect the original label again.
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      <img
+                        src={testResult.image}
+                        alt="Transformed"
+                        className="w-32 h-32 object-cover rounded-lg border"
+                        style={{ borderColor: COLOR_BORDER }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
 
           {/* Bottom Info */}

@@ -132,5 +132,61 @@ export async function getRoot(): Promise<any> {
   }
 }
 
+/**
+ * Test robustness of cloaked image under real-world conditions
+ * POST /api/v1/shield/robustness
+ * @param file - Cloaked image file to test
+ * @param testType - Type of test: "jpeg", "blur", or "resize"
+ * @returns Robustness test result with new confidence and transformed image
+ */
+export async function testRobustness(
+  file: File,
+  testType: 'jpeg' | 'blur' | 'resize'
+): Promise<{
+  status: string;
+  new_label: string;
+  new_confidence: number;
+  transformed_image: string;
+}> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('test_type', testType);
+
+  const url = new URL('/api/v1/shield/robustness', API_BASE_URL);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      if (response.status === 422) {
+        const error: HTTPValidationError = await response.json();
+        throw new ApiError(
+          'Validation error',
+          422,
+          error
+        );
+      }
+      throw new ApiError(
+        `API request failed: ${response.statusText}`,
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      0
+    );
+  }
+}
+
 // Export API base URL for reference
 export { API_BASE_URL };
