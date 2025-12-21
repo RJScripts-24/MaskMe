@@ -1,0 +1,5 @@
+# Excludes venv, __pycache__, .env, /data
+venv/
+__pycache__/
+.env
+data/
