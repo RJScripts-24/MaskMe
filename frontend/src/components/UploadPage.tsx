@@ -259,6 +259,60 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                         className="w-full h-auto rounded-lg mb-6"
                       />
                       
+                      {/* Stealth Slider */}
+                      {!protectedImage && (
+                        <motion.div
+                          className="mb-6 p-4 rounded-lg"
+                          style={{ 
+                            backgroundColor: '#F8FAFC',
+                            border: '1px solid #E2E8F0'
+                          }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <label 
+                              htmlFor="stealth-slider" 
+                              className="text-sm font-medium"
+                              style={{ color: '#334155' }}
+                            >
+                              Stealth Strength
+                            </label>
+                            <span 
+                              className="text-sm font-mono px-2 py-1 rounded"
+                              style={{ 
+                                backgroundColor: '#EFF6FF',
+                                color: '#2563EB',
+                                border: '1px solid #BFDBFE'
+                              }}
+                            >
+                              {epsilon.toFixed(2)}
+                            </span>
+                          </div>
+                          <input
+                            id="stealth-slider"
+                            type="range"
+                            min="0.00"
+                            max="0.10"
+                            step="0.01"
+                            value={epsilon}
+                            onChange={(e) => setEpsilon(parseFloat(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                              background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(epsilon / 0.10) * 100}%, #E2E8F0 ${(epsilon / 0.10) * 100}%, #E2E8F0 100%)`
+                            }}
+                          />
+                          <div className="flex justify-between mt-2">
+                            <span className="text-xs" style={{ color: '#64748B' }}>Subtle</span>
+                            <span className="text-xs" style={{ color: '#64748B' }}>Strong</span>
+                          </div>
+                          <p className="text-xs mt-2" style={{ color: '#64748B' }}>
+                            Higher values provide stronger protection but may be more noticeable
+                          </p>
+                        </motion.div>
+                      )}
+                      
                       {!protectedImage && (
                         <motion.button
                           onClick={handleMaskClick}

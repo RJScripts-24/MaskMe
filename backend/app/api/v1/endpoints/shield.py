@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from PIL import ImageChops
 from app.schemas.image_schema import ShieldResponse
 from app.utils.image_utils import read_image_file, image_to_base64
@@ -7,7 +7,7 @@ from app.services.attack_engine import attack_engine
 router = APIRouter()
 
 @router.post("/cloak", response_model=ShieldResponse)
-async def cloak_image(file: UploadFile = File(...), epsilon: float = 0.03):
+async def cloak_image(file: UploadFile = File(...), epsilon: float = Form(0.03)):
     try:
         original_image = await read_image_file(file)
         

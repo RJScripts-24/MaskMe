@@ -32,9 +32,9 @@ export async function cloakImage(
 ): Promise<ShieldResponse> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('epsilon', epsilon.toString());
 
   const url = new URL(API_ENDPOINTS.CLOAK_IMAGE, API_BASE_URL);
-  url.searchParams.append('epsilon', epsilon.toString());
 
   try {
     const response = await fetch(url.toString(), {
