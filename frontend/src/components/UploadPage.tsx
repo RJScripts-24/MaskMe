@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import ProcessingScreen from './ProcessingScreen';
 import ResultScreen from './ResultScreen';
-import { cloakImage, ApiError } from '../services/api';
+import { ApiError } from '../services/api';
 import { ShieldResponse } from '../types/api';
 
 interface UploadPageProps {
@@ -15,8 +15,12 @@ interface UploadPageProps {
 export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [protectedImage, setProtectedImage] = useState<string | null>(null);
   const [apiResponse, setApiResponse] = useState<ShieldResponse | null>(null);
+  const [batchResults, setBatchResults] = useState<Array<{ id: string; protected: string; fileName: string }>>([]);
+  const [batchProgress, setBatchProgress] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showProcessingScreen, setShowProcessingScreen] = useState(false);
@@ -24,6 +28,20 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
   const [error, setError] = useState<string | null>(null);
   const [epsilon, setEpsilon] = useState<number>(0.03);
   const [attackMethod, setAttackMethod] = useState<string>("FGSM");
+  const [privacyMode, setPrivacyMode] = useState<'standard' | 'strict'>('standard');
+
+  const clearAllUploadState = () => {
+    setUploadedImage(null);
+    setUploadedFile(null);
+    setUploadedImages([]);
+    setUploadedFiles([]);
+    setProtectedImage(null);
+    setApiResponse(null);
+    setBatchResults([]);
+    setBatchProgress(0);
+    setError(null);
+    setIsProcessing(false);
+  };
 
   // If result screen should be shown
   if (showResultScreen && uploadedImage && protectedImage && apiResponse) {
@@ -35,12 +53,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
         user={user}
         onTryAnother={() => {
           setShowResultScreen(false);
-          setUploadedImage(null);
-          setUploadedFile(null);
-          setProtectedImage(null);
-          setApiResponse(null);
-          setIsProcessing(false);
-          setError(null);
+          clearAllUploadState();
         }}
         onBack={onBack}
         onLogout={onLogout}
@@ -53,8 +66,10 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
     return (
       <ProcessingScreen
         file={uploadedFile}
+        files={uploadedFiles}
         epsilon={epsilon}
         attackMethod={attackMethod}
+        privacyMode={privacyMode}
         user={user}
         onBack={onBack}
         onLogout={onLogout}
@@ -65,6 +80,15 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           setProtectedImage(`data:image/png;base64,${response.cloaked_image}`);
           setShowResultScreen(true);
         }}
+        onBatchComplete={(results, failedCount) => {
+          setShowProcessingScreen(false);
+          setBatchResults(results);
+          setBatchProgress(uploadedFiles.length);
+          setIsProcessing(false);
+          if (failedCount > 0) {
+            setError(`${failedCount} image(s) failed to process. Please retry those files.`);
+          }
+        }}
         onError={(errorMessage) => {
           setShowProcessingScreen(false);
           setError(errorMessage);
@@ -74,27 +98,55 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
     );
   }
 
-  const handleFileSelect = (file: File) => {
-    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+  const readFileAsDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setUploadedImage(result);
-        setUploadedFile(file);
-        setError(null); // Clear any previous errors
-        // Don't process immediately - wait for user to click "Mask" button
-      };
+      reader.onload = (e) => resolve((e.target?.result as string) || '');
+      reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
       reader.readAsDataURL(file);
-    } else {
-      setError('Please upload a valid JPEG or PNG image.');
+    });
+  };
+
+  const handleFilesSelect = async (files: File[]) => {
+    if (!files.length) return;
+
+    if (files.length > 5) {
+      setError('You can upload a maximum of 5 images at a time.');
+      return;
+    }
+
+    const invalid = files.find((file) => !(file.type === 'image/jpeg' || file.type === 'image/png'));
+    if (invalid) {
+      setError('Please upload only valid JPEG or PNG images.');
+      return;
+    }
+
+    try {
+      const previews = await Promise.all(files.map((file) => readFileAsDataUrl(file)));
+      setUploadedFiles(files);
+      setUploadedImages(previews);
+      setUploadedFile(files[0] || null);
+      setUploadedImage(previews[0] || null);
+      setProtectedImage(null);
+      setApiResponse(null);
+      setBatchResults([]);
+      setBatchProgress(0);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load selected files.');
     }
   };
 
-  const handleMaskClick = () => {
-    if (uploadedFile) {
-      setShowProcessingScreen(true);
-      setError(null);
-    }
+  const handleMaskClick = async () => {
+    if (!uploadedFiles.length) return;
+
+    setIsProcessing(true);
+    setBatchProgress(0);
+    setBatchResults([]);
+    setProtectedImage(null);
+    setApiResponse(null);
+    setError(null);
+    setShowProcessingScreen(true);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -110,15 +162,22 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    handleFileSelect(file);
+    const files = Array.from(e.dataTransfer.files).slice(0, 5);
+    void handleFilesSelect(files);
   };
 
   const handleBrowse = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
+    const files = Array.from(e.target.files || []).slice(0, 5);
+    void handleFilesSelect(files);
+  };
+
+  const downloadDataUrl = (dataUrl: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
@@ -299,7 +358,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.4, delay: 0.4 }}
                 >
-                  {!uploadedImage ? (
+                  {uploadedImages.length === 0 ? (
                     <>
                       <motion.div
                         animate={{ y: [0, -10, 0] }}
@@ -320,6 +379,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                         <input
                           type="file"
                           accept="image/jpeg,image/png"
+                          multiple
                           onChange={handleBrowse}
                           className="hidden"
                         />
@@ -336,19 +396,37 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                       </label>
 
                       <p className="text-sm" style={{ color: '#71717a' }}>
-                        JPG / PNG only
+                        JPG / PNG only, up to 5 images
                       </p>
                     </>
                   ) : (
                     <div className="w-full">
-                      <img
-                        src={uploadedImage}
-                        alt="Uploaded"
-                        className="w-full h-auto rounded-lg mb-6"
-                      />
+                      {uploadedImages.length === 1 ? (
+                        <img
+                          src={uploadedImage || undefined}
+                          alt="Uploaded"
+                          className="w-full h-auto rounded-lg mb-6"
+                        />
+                      ) : (
+                        <div className="mb-6">
+                          <div className="grid grid-cols-3 gap-2">
+                            {uploadedImages.map((img, idx) => (
+                              <img
+                                key={`${img.slice(0, 24)}-${idx}`}
+                                src={img}
+                                alt={`Upload ${idx + 1}`}
+                                className="w-full h-24 object-cover rounded-md"
+                              />
+                            ))}
+                          </div>
+                          <p className="text-xs mt-2" style={{ color: '#71717a' }}>
+                            {uploadedImages.length} images selected (max 5)
+                          </p>
+                        </div>
+                      )}
 
                       {/* Stealth Slider */}
-                      {!protectedImage && (
+                      {!protectedImage && batchResults.length === 0 && (
                         <motion.div
                           className="mb-6 p-4 rounded-xl"
                           style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
@@ -380,7 +458,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                       )}
 
                       {/* Attack Method Dropdown */}
-                      {!protectedImage && (
+                      {!protectedImage && batchResults.length === 0 && (
                         <motion.div
                           className="mb-6 p-4 rounded-xl"
                           style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
@@ -403,7 +481,33 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                         </motion.div>
                       )}
 
-                      {!protectedImage && (
+                      {!protectedImage && batchResults.length === 0 && (
+                        <motion.div
+                          className="mb-6 p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          <label htmlFor="strict-privacy" className="flex items-center justify-between gap-4 cursor-pointer">
+                            <div>
+                              <p className="text-sm font-medium" style={{ color: '#e4e4e7' }}>Strict Privacy Mode</p>
+                              <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+                                Adds an extra visual privacy filter to improve resistance against general AI vision models.
+                              </p>
+                            </div>
+                            <input
+                              id="strict-privacy"
+                              type="checkbox"
+                              checked={privacyMode === 'strict'}
+                              onChange={(e) => setPrivacyMode(e.target.checked ? 'strict' : 'standard')}
+                              className="w-4 h-4"
+                            />
+                          </label>
+                        </motion.div>
+                      )}
+
+                      {!protectedImage && batchResults.length === 0 && (
                         <motion.button
                           onClick={handleMaskClick}
                           className="w-full py-3 rounded-xl mb-3 font-semibold text-sm transition-all flex items-center justify-center gap-2"
@@ -415,18 +519,12 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                           transition={{ delay: 0.2 }}
                         >
                           <Shield className="w-5 h-5" strokeWidth={2} />
-                          Mask Photo
+                          {uploadedFiles.length > 1 ? `Mask ${uploadedFiles.length} Photos` : 'Mask Photo'}
                         </motion.button>
                       )}
 
                       <button
-                        onClick={() => {
-                          setUploadedImage(null);
-                          setUploadedFile(null);
-                          setProtectedImage(null);
-                          setApiResponse(null);
-                          setError(null);
-                        }}
+                        onClick={clearAllUploadState}
                         className="w-full px-6 py-2 rounded-xl transition-colors text-sm"
                         style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)' }}
                       >
@@ -474,7 +572,43 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                       <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#8b5cf6' }} strokeWidth={1} />
                     </motion.div>
                     <p style={{ color: '#ffffff' }}>Processing your image...</p>
-                    <p className="text-sm mt-2" style={{ color: '#71717a' }}>Applying privacy protection</p>
+                    <p className="text-sm mt-2" style={{ color: '#71717a' }}>
+                      {uploadedFiles.length > 1
+                        ? `Applying privacy protection (${batchProgress}/${uploadedFiles.length})`
+                        : 'Applying privacy protection'}
+                    </p>
+                  </motion.div>
+                ) : batchResults.length > 0 ? (
+                  <motion.div
+                    className="w-full"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <p className="text-sm mb-4" style={{ color: '#a1a1aa' }}>
+                      Batch complete: {batchResults.length} / {uploadedFiles.length} protected
+                    </p>
+                    <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                      {batchResults.map((item, idx) => (
+                        <div
+                          key={item.id}
+                          className="p-3 rounded-lg"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <div className="grid grid-cols-[56px_1fr_auto] gap-3 items-center">
+                            <img src={item.protected} alt={`Protected ${idx + 1}`} className="w-14 h-14 object-cover rounded-md" />
+                            <p className="text-xs truncate" style={{ color: '#d4d4d8' }}>{item.fileName}</p>
+                            <button
+                              onClick={() => downloadDataUrl(item.protected, `masked_${item.fileName.replace(/\.[^/.]+$/, '')}.png`)}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold"
+                              style={{ backgroundColor: '#ddd6fe', color: '#000' }}
+                            >
+                              Download
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </motion.div>
                 ) : protectedImage ? (
                   <motion.div
@@ -533,7 +667,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
               </div>
 
               {/* Info Cards Below Preview */}
-              {protectedImage && (
+              {(protectedImage || batchResults.length > 0) && (
                 <motion.div
                   className="mt-6 grid grid-cols-2 gap-4"
                   initial={{ opacity: 0, y: 20 }}

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Depends
 from fastapi.responses import StreamingResponse
-from PIL import ImageChops
-from app.schemas.image_schema import ShieldResponse, ReportRequest, HistoryItem, VerifyResponse
+from PIL import Image, ImageChops, ImageFilter
+from app.schemas.image_schema import ShieldResponse, ReportRequest, HistoryItem, VerifyResponse, MultiShieldResponse
 from app.utils.image_utils import read_image_file, image_to_base64
 from app.services.attack_engine import attack_engine
 from app.services.robustness import robustness_tester
@@ -15,6 +15,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from typing import List
 import torch
+import numpy as np
 from pymongo.errors import PyMongoError
 
 logger = get_logger(__name__)
@@ -27,22 +28,83 @@ def require_database():
         raise HTTPException(status_code=503, detail="Database temporarily unavailable")
     return db
 
+
+def apply_strict_privacy_filter(image):
+    """Apply additional privacy perturbations while keeping content readable for humans."""
+    # First: transfer-oriented adversarial hardening across multiple classifiers.
+    hardened = Verifier.harden_for_transfer(image)
+
+    # Second: light chroma shaping and sharpen to keep human readability high.
+    rgb = hardened.convert("RGB")
+    arr = np.asarray(rgb, dtype=np.float32) / 255.0
+    h, w, _ = arr.shape
+
+    r = arr[:, :, 0]
+    g = arr[:, :, 1]
+    b = arr[:, :, 2]
+
+    # Preserve luminance detail, perturb chroma information more strongly.
+    y = 0.299 * r + 0.587 * g + 0.114 * b
+    cb = b - y
+    cr = r - y
+
+    # Deterministic micro-patterns (transfer better across model families than plain blur).
+    yy, xx = np.mgrid[0:h, 0:w]
+    pattern_a = np.sin((xx * 0.23) + (yy * 0.11))
+    pattern_b = np.cos((xx * 0.17) - (yy * 0.19))
+    checker = ((xx + yy) % 2).astype(np.float32) * 2.0 - 1.0
+
+    # Smoothed noise keeps image natural while adding classifier-disruptive artifacts.
+    rng = np.random.default_rng(seed=(h * 131 + w * 17) % (2**32 - 1))
+    noise = rng.standard_normal((h, w)).astype(np.float32)
+    noise = (noise + np.roll(noise, 1, axis=0) + np.roll(noise, -1, axis=0)
+             + np.roll(noise, 1, axis=1) + np.roll(noise, -1, axis=1)) / 5.0
+
+    cb = cb + 0.070 * pattern_a + 0.028 * checker + 0.035 * noise
+    cr = cr + 0.060 * pattern_b - 0.022 * checker - 0.030 * noise
+
+    # Very subtle luminance modulation keeps humans comfortable while hurting model certainty.
+    y = np.clip(y + 0.010 * np.sin(xx * 0.35) * np.cos(yy * 0.21), 0.0, 1.0)
+
+    out_r = np.clip(y + 1.402 * cr, 0.0, 1.0)
+    out_b = np.clip(y + 1.772 * cb, 0.0, 1.0)
+    out_g = np.clip((y - 0.299 * out_r - 0.114 * out_b) / 0.587, 0.0, 1.0)
+
+    out = np.stack([out_r, out_g, out_b], axis=2)
+    out_img = Image.fromarray((out * 255.0).astype(np.uint8), mode="RGB")
+
+    # Recover perceived sharpness for humans without removing protective patterns.
+    return out_img.filter(ImageFilter.UnsharpMask(radius=1.0, percent=135, threshold=2))
+
 @router.post("/cloak", response_model=ShieldResponse)
 async def cloak_image(
     file: UploadFile = File(...),
     epsilon: float = Form(0.03),
     attack_type: str = Form("FGSM"),
+    privacy_mode: str = Form("standard"),
     current_user: dict = Depends(get_current_user)
 ):
     try:
+        if privacy_mode not in {"standard", "strict"}:
+            raise HTTPException(status_code=400, detail="privacy_mode must be 'standard' or 'strict'")
+
         original_image = await read_image_file(file)
 
         result = attack_engine.process(original_image, epsilon, method=attack_type)
 
-        cloaked_b64 = image_to_base64(result["cloaked_image"])
+        output_image = result["cloaked_image"]
+        transfer_assessment = None
+        if privacy_mode == "strict":
+            output_image = apply_strict_privacy_filter(output_image)
+            try:
+                transfer_assessment = Verifier.evaluate_transfer_risk(output_image, result["original_label"])
+            except Exception as assess_exc:
+                logger.warning(f"Transfer assessment failed in strict mode: {str(assess_exc)}")
+
+        cloaked_b64 = image_to_base64(output_image)
 
         # Calculate noise map for X-Ray Mode
-        diff = ImageChops.difference(original_image, result["cloaked_image"])
+        diff = ImageChops.difference(original_image, output_image)
         # Amplify the difference to make it visible (multiply by 10)
         diff = diff.point(lambda p: p * 10)
         noise_map_b64 = image_to_base64(diff)
@@ -72,7 +134,8 @@ async def cloak_image(
             original_label=result["original_label"],
             cloaked_label=result["cloaked_label"],
             cloaked_image=cloaked_b64,
-            noise_map=noise_map_b64
+            noise_map=noise_map_b64,
+            transfer_assessment=transfer_assessment,
         )
     except PyMongoError as e:
         logger.exception(f"Database access failed during cloak: {str(e)}")

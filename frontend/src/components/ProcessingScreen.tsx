@@ -6,30 +6,55 @@ import { ShieldResponse } from '../types/api';
 
 interface ProcessingScreenProps {
   file: File;
+  files?: File[];
   epsilon?: number;
   attackMethod?: string;
+  privacyMode?: 'standard' | 'strict';
   user: { name: string; email: string; picture: string } | null;
   onBack: () => void;
   onLogout: () => void;
   onComplete: (response: ShieldResponse) => void;
+  onBatchComplete?: (results: Array<{ id: string; protected: string; fileName: string }>, failedCount: number) => void;
   onError: (error: string) => void;
 }
 
-export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = "FGSM", user, onBack, onLogout, onComplete, onError }: ProcessingScreenProps) {
+export default function ProcessingScreen({ file, files = [], epsilon = 0.03, attackMethod = "FGSM", privacyMode = 'standard', user, onBack, onLogout, onComplete, onBatchComplete, onError }: ProcessingScreenProps) {
   const [processingStatus, setProcessingStatus] = useState<string>('Uploading image...');
   const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
 
   useEffect(() => {
     const processImage = async () => {
       try {
+        if (files.length > 1 && onBatchComplete) {
+          const results: Array<{ id: string; protected: string; fileName: string }> = [];
+          let failedCount = 0;
+
+          for (let i = 0; i < files.length; i += 1) {
+            const currentFile = files[i];
+            setProcessingStatus(`Masking image ${i + 1} of ${files.length}: ${currentFile.name}`);
+
+            try {
+              const response = await cloakImage(currentFile, epsilon, attackMethod, privacyMode);
+              results.push({
+                id: `${Date.now()}-${i}`,
+                protected: `data:image/png;base64,${response.cloaked_image}`,
+                fileName: currentFile.name,
+              });
+            } catch {
+              failedCount += 1;
+            }
+          }
+
+          setProcessingStatus('Batch protection completed');
+          setTimeout(() => {
+            onBatchComplete(results, failedCount);
+          }, 500);
+          return;
+        }
+
         setProcessingStatus('Uploading image...');
-
-        // Call the actual API
-        const response = await cloakImage(file, epsilon, attackMethod);
-
+        const response = await cloakImage(file, epsilon, attackMethod, privacyMode);
         setProcessingStatus('Protection applied!');
-
-        // Wait a brief moment to show success message
         setTimeout(() => {
           onComplete(response);
         }, 500);
@@ -52,7 +77,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
     };
 
     processImage();
-  }, [file, epsilon, attackMethod, onComplete, onError]);
+  }, [file, files, epsilon, attackMethod, privacyMode, onComplete, onBatchComplete, onError]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>

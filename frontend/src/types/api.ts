@@ -18,6 +18,16 @@ export interface ShieldResponse {
   cloaked_label: string;
   cloaked_image: string; // base64 encoded image
   noise_map?: string; // base64 encoded noise image for X-Ray Mode
+  transfer_assessment?: {
+    score: number;
+    level: 'low' | 'medium' | 'high' | string;
+    note: string;
+    models: Record<string, {
+      top1_label: string;
+      top1_confidence: number;
+      original_label_confidence: number;
+    }>;
+  };
 }
 
 // Error types

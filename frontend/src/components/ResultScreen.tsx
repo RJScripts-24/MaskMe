@@ -550,6 +550,66 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             />
           </div>
 
+          {apiResponse.transfer_assessment && (
+            <motion.div
+              className="mb-10 p-5 rounded-xl border"
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.02)',
+                borderColor: 'rgba(255,255,255,0.08)',
+              }}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <h3 className="text-base font-semibold" style={{ color: COLOR_HEADER_TEXT }}>
+                  Cross-Model Leakage Estimate (Strict Mode)
+                </h3>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-semibold uppercase"
+                  style={{
+                    backgroundColor:
+                      apiResponse.transfer_assessment.level === 'low'
+                        ? 'rgba(16,185,129,0.18)'
+                        : apiResponse.transfer_assessment.level === 'medium'
+                        ? 'rgba(245,158,11,0.18)'
+                        : 'rgba(239,68,68,0.18)',
+                    color:
+                      apiResponse.transfer_assessment.level === 'low'
+                        ? '#34d399'
+                        : apiResponse.transfer_assessment.level === 'medium'
+                        ? '#fbbf24'
+                        : '#f87171',
+                  }}
+                >
+                  Risk {apiResponse.transfer_assessment.score.toFixed(1)} / 100
+                </span>
+              </div>
+              <p className="text-sm mb-4" style={{ color: COLOR_SUBTEXT }}>
+                {apiResponse.transfer_assessment.note}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(apiResponse.transfer_assessment.models).map(([name, modelInfo]) => (
+                  <div
+                    key={name}
+                    className="rounded-lg p-3"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  >
+                    <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#a1a1aa' }}>
+                      {name.replace('_', ' ')}
+                    </p>
+                    <p className="text-sm font-semibold" style={{ color: '#e4e4e7' }}>
+                      Top-1: {modelInfo.top1_label} ({modelInfo.top1_confidence.toFixed(1)}%)
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+                      Original-label confidence: {modelInfo.original_label_confidence.toFixed(1)}%
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* Action Buttons Section */}
           <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-4"

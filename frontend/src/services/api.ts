@@ -41,12 +41,14 @@ function getAuthHeaders(): Record<string, string> {
 export async function cloakImage(
   file: File,
   epsilon: number = 0.03,
-  attackType: string = "FGSM"
+  attackType: string = "FGSM",
+  privacyMode: 'standard' | 'strict' = 'standard'
 ): Promise<ShieldResponse> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('epsilon', epsilon.toString());
   formData.append('attack_type', attackType);
+  formData.append('privacy_mode', privacyMode);
 
   const url = new URL(API_ENDPOINTS.CLOAK_IMAGE, API_BASE_URL);
 

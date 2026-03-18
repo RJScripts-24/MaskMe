@@ -1,6 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict
 from datetime import datetime
+
+
+class TransferAssessment(BaseModel):
+    score: float
+    level: str
+    note: str
+    models: Dict[str, dict]
 
 class ShieldResponse(BaseModel):
     status: str
@@ -10,6 +17,7 @@ class ShieldResponse(BaseModel):
     cloaked_label: str
     cloaked_image: str
     noise_map: Optional[str] = None
+    transfer_assessment: Optional[TransferAssessment] = None
 
 
 class ReportRequest(BaseModel):
@@ -34,3 +42,6 @@ class HistoryItem(BaseModel):
 class VerifyResponse(BaseModel):
     label: str
     confidence: float
+
+class MultiShieldResponse(BaseModel):
+    results: list[ShieldResponse]
