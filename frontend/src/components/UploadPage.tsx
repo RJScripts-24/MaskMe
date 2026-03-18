@@ -6,6 +6,7 @@ import ResultScreen from './ResultScreen';
 import { ShieldResponse } from '../types/api';
 import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
 import { usePageTutorial } from './tutorial/usePageTutorial';
+import { useIsMobile } from './ui/use-mobile';
 
 interface UploadPageProps {
   user: { name: string; email: string; picture: string } | null;
@@ -41,6 +42,7 @@ const UPLOAD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) {
+  const isMobile = useIsMobile();
   const {
     isTutorialOpen,
     startTutorial,
@@ -225,8 +227,8 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
-          height: '72px',
+          padding: isMobile ? '0 12px' : '0 24px',
+          height: isMobile ? '64px' : '72px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}
         initial={{ opacity: 0, y: -20 }}
@@ -249,16 +251,16 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           <span className="text-lg font-semibold">MaskMe</span>
         </motion.div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
           <motion.button
             onClick={startTutorial}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 16px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '13px',
+              fontSize: isMobile ? '0px' : '13px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -268,17 +270,17 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
             whileTap={{ scale: 0.97 }}
           >
             <CircleHelp size={15} />
-            Start Tutorial
+            {!isMobile && 'Start Tutorial'}
           </motion.button>
           <motion.button
             onClick={onBack}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -288,7 +290,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
             whileTap={{ scale: 0.97 }}
           >
             <ArrowLeft size={16} />
-            Back to Home
+            {!isMobile && 'Back to Home'}
           </motion.button>
 
           <div
@@ -315,10 +317,10 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 18px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               color: '#f87171',
@@ -328,13 +330,13 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
             whileTap={{ scale: 0.97 }}
           >
             <LogOut size={16} />
-            Sign Out
+            {!isMobile && 'Sign Out'}
           </motion.button>
         </div>
       </motion.nav>
 
       {/* Main Content */}
-      <main className="py-16 px-6">
+      <main className="py-16 px-6" style={{ padding: isMobile ? '28px 12px 36px' : undefined }}>
         {/* Animated background elements */}
         <motion.div
           className="fixed top-20 left-10 w-80 h-80 rounded-full blur-3xl pointer-events-none"
@@ -362,12 +364,13 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium mb-6"
+                style={{ display: isMobile ? 'none' : 'inline-flex' }}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
                 Welcome back, {primaryName}
               </motion.div>
             )}
-            <h1 className="text-4xl mb-3 font-semibold" style={{ color: '#ffffff' }}>
+            <h1 className={isMobile ? 'text-3xl mb-3 font-semibold' : 'text-4xl mb-3 font-semibold'} style={{ color: '#ffffff' }}>
               Upload & Protect Your Photo
             </h1>
             <p style={{ color: '#64748B' }}>
@@ -402,7 +405,9 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
                 className="border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] transition-all duration-300"
                 style={{
                   borderColor: isDragging ? '#8b5cf6' : 'rgba(255,255,255,0.08)',
-                  backgroundColor: isDragging ? 'rgba(139,92,246,0.05)' : '#111111'
+                  backgroundColor: isDragging ? 'rgba(139,92,246,0.05)' : '#111111',
+                  padding: isMobile ? '24px' : '48px',
+                  minHeight: isMobile ? '280px' : '400px',
                 }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -614,7 +619,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
             >
               <div
                 className="rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px]"
-                style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)' }}
+                style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)', padding: isMobile ? '24px' : '48px', minHeight: isMobile ? '280px' : '400px' }}
               >
                 {isProcessing ? (
                   <motion.div
@@ -726,7 +731,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
               {/* Info Cards Below Preview */}
               {(protectedImage || batchResults.length > 0) && (
                 <motion.div
-                  className="mt-6 grid grid-cols-2 gap-4"
+                  className={isMobile ? 'mt-6 grid grid-cols-1 gap-4' : 'mt-6 grid grid-cols-2 gap-4'}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
@@ -747,7 +752,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           {/* Bottom Info Banner */}
           <motion.div
             data-tutorial="upload-banner"
-            className="mt-16 max-w-4xl mx-auto p-6 rounded-2xl flex items-center gap-4"
+            className={isMobile ? 'mt-12 max-w-4xl mx-auto p-4 rounded-2xl flex flex-col items-start gap-3' : 'mt-16 max-w-4xl mx-auto p-6 rounded-2xl flex items-center gap-4'}
             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { testRobustness, verifyMasking } from '../services/api';
 import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
 import { usePageTutorial } from './tutorial/usePageTutorial';
+import { useIsMobile } from './ui/use-mobile';
 
 // Shared color constants - DARK THEME (matching landing page)
 const COLOR_PRIMARY = '#8b5cf6';
@@ -105,6 +106,7 @@ function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, sub
 }
 
 export default function ResultScreen({ originalImage, protectedImage, apiResponse, user, onTryAnother, onBack, onLogout }: ResultScreenProps) {
+  const isMobile = useIsMobile();
   const {
     isTutorialOpen,
     startTutorial,
@@ -277,8 +279,8 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
-          height: '72px',
+          padding: isMobile ? '0 12px' : '0 24px',
+          height: isMobile ? '64px' : '72px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}
         initial={{ opacity: 0, y: -20 }}
@@ -301,16 +303,16 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
           <span className="text-lg font-semibold" style={{ color: COLOR_HEADER_TEXT }}>MaskMe</span>
         </motion.div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
           <motion.button
             onClick={startTutorial}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 16px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '13px',
+              fontSize: isMobile ? '0px' : '13px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -320,17 +322,17 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             whileTap={{ scale: 0.97 }}
           >
             <CircleHelp size={15} />
-            Start Tutorial
+            {!isMobile && 'Start Tutorial'}
           </motion.button>
           <motion.button
             onClick={onBack}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -340,7 +342,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             whileTap={{ scale: 0.97 }}
           >
             <ArrowLeft size={16} />
-            Back to Home
+            {!isMobile && 'Back to Home'}
           </motion.button>
 
           <div
@@ -367,10 +369,10 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 18px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               color: '#f87171',
@@ -380,13 +382,13 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             whileTap={{ scale: 0.97 }}
           >
             <LogOut size={16} />
-            Sign Out
+            {!isMobile && 'Sign Out'}
           </motion.button>
         </div>
       </motion.nav>
 
       {/* Main Content */}
-      <main className="py-16 px-6">
+      <main className="py-16 px-6" style={{ padding: isMobile ? '28px 12px 36px' : undefined }}>
         <div className="max-w-6xl mx-auto">
           {/* Page Title */}
           <motion.div
@@ -404,7 +406,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             >
               <Shield className="w-8 h-8" style={{ color: COLOR_PRIMARY }} strokeWidth={2} />
             </motion.div>
-            <h1 className="text-4xl mb-3" style={{ color: COLOR_HEADER_TEXT }}>
+            <h1 className={isMobile ? 'text-3xl mb-3' : 'text-4xl mb-3'} style={{ color: COLOR_HEADER_TEXT }}>
               Protection Applied Successfully
             </h1>
             <p style={{ color: COLOR_SUBTEXT }}>
@@ -678,7 +680,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             <motion.button
               onClick={handleDownload}
               className="px-8 py-4 rounded-[12px] flex items-center gap-3 text-base min-w-[260px] justify-center font-semibold"
-              style={{ backgroundColor: COLOR_PRIMARY, color: '#FFFFFF', boxShadow: '0 8px 30px rgba(139,92,246,0.2)' }}
+              style={{ backgroundColor: COLOR_PRIMARY, color: '#FFFFFF', boxShadow: '0 8px 30px rgba(139,92,246,0.2)', minWidth: isMobile ? '100%' : '260px', width: isMobile ? '100%' : 'auto' }}
               whileHover={{ scale: 1.04, boxShadow: '0 12px 40px rgba(139,92,246,0.3)' }}
               whileTap={{ scale: 0.97 }}
             >
@@ -695,7 +697,9 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                 backgroundColor: isDownloadingReport ? 'rgba(255,255,255,0.03)' : 'rgba(16, 185, 129, 0.05)',
                 borderColor: isDownloadingReport ? 'rgba(255,255,255,0.05)' : '#10b981',
                 color: isDownloadingReport ? '#71717a' : '#34d399',
-                cursor: isDownloadingReport ? 'not-allowed' : 'pointer'
+                cursor: isDownloadingReport ? 'not-allowed' : 'pointer',
+                minWidth: isMobile ? '100%' : '260px',
+                width: isMobile ? '100%' : 'auto',
               }}
               whileHover={!isDownloadingReport ? { scale: 1.04, backgroundColor: 'rgba(16, 185, 129, 0.1)' } : {}}
               whileTap={!isDownloadingReport ? { scale: 0.97 } : {}}
@@ -708,7 +712,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             <motion.button
               onClick={onTryAnother}
               className="px-8 py-4 rounded-[12px] flex items-center gap-3 text-base min-w-[260px] justify-center border-2 font-semibold"
-              style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#ffffff' }}
+              style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#ffffff', minWidth: isMobile ? '100%' : '260px', width: isMobile ? '100%' : 'auto' }}
               whileHover={{ scale: 1.04, borderColor: COLOR_PRIMARY, backgroundColor: 'rgba(255,255,255,0.06)' }}
               whileTap={{ scale: 0.97 }}
             >
@@ -819,7 +823,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                     borderColor: testResult.survived ? COLOR_STATUS2_BORDER : COLOR_STATUS1_BORDER
                   }}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className={isMobile ? 'flex flex-col items-start gap-4' : 'flex items-start gap-4'}>
                     <div className="flex-shrink-0">
                       {testResult.survived ? (
                         <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLOR_STATUS2_ICON_BG }}>
@@ -869,7 +873,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
 
           {/* Bottom Info */}
           <motion.div
-            className="mt-12 max-w-3xl mx-auto p-6 rounded-xl flex items-start gap-4"
+            className={isMobile ? 'mt-10 max-w-3xl mx-auto p-4 rounded-xl flex flex-col items-start gap-3' : 'mt-12 max-w-3xl mx-auto p-6 rounded-xl flex items-start gap-4'}
             style={{ backgroundColor: COLOR_CARD_BG, border: `1px solid ${COLOR_CARD_BORDER}` }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

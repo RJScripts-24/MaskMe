@@ -14,6 +14,7 @@ import { ApiError, getHistory, deleteHistoryItem } from '../services/api';
 import { toast } from 'sonner';
 import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
 import { usePageTutorial } from './tutorial/usePageTutorial';
+import { useIsMobile } from './ui/use-mobile';
 
 interface UserDashboardProps {
   user: { name: string; email: string; picture: string } | null;
@@ -55,6 +56,7 @@ export default function UserDashboard({
   onLogout,
   onBackToHome,
 }: UserDashboardProps) {
+  const isMobile = useIsMobile();
   const {
     isTutorialOpen,
     startTutorial,
@@ -238,7 +240,7 @@ export default function UserDashboard({
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {[...Array(8)].map((_, i) => (
+      {[...Array(isMobile ? 3 : 8)].map((_, i) => (
         <motion.div
           key={i}
           style={{
@@ -264,8 +266,8 @@ export default function UserDashboard({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
-          height: '72px',
+          padding: isMobile ? '0 12px' : '0 24px',
+          height: isMobile ? '64px' : '72px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}
         initial={{ opacity: 0, y: -20 }}
@@ -288,16 +290,16 @@ export default function UserDashboard({
           <span className="text-lg font-semibold">MaskMe</span>
         </motion.div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
           <motion.button
             onClick={startTutorial}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 16px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '13px',
+              fontSize: isMobile ? '0px' : '13px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -307,7 +309,7 @@ export default function UserDashboard({
             whileTap={{ scale: 0.97 }}
           >
             <CircleHelp size={15} />
-            Start Tutorial
+            {!isMobile && 'Start Tutorial'}
           </motion.button>
           <div
             className="hidden sm:flex"
@@ -332,10 +334,10 @@ export default function UserDashboard({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 18px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               color: '#f87171',
@@ -345,12 +347,12 @@ export default function UserDashboard({
             whileTap={{ scale: 0.97 }}
           >
             <LogOut size={16} />
-            Sign Out
+            {!isMobile && 'Sign Out'}
           </motion.button>
         </div>
       </motion.nav>
 
-      <section className="relative z-10" style={{ padding: '72px 24px 48px', textAlign: 'center' }}>
+      <section className="relative z-10" style={{ padding: isMobile ? '42px 14px 24px' : '72px 24px 48px', textAlign: 'center' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto' }}>
           <motion.h1
             style={{
@@ -368,7 +370,7 @@ export default function UserDashboard({
           </motion.h1>
 
           <motion.p
-            style={{ color: '#a1a1aa', fontSize: '16px', lineHeight: 1.7, maxWidth: '680px', margin: '0 auto 38px' }}
+            style={{ color: '#a1a1aa', fontSize: isMobile ? '14px' : '16px', lineHeight: 1.7, maxWidth: '680px', margin: isMobile ? '0 auto 22px' : '0 auto 38px' }}
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
@@ -403,7 +405,7 @@ export default function UserDashboard({
               <p style={{ color: '#374151', fontSize: '13px', fontWeight: 600 }}>
                 Avg reduction: {(reductionAverage * 100).toFixed(1)}%
               </p>
-              <p style={{ color: '#6b7280', fontSize: '13px', fontWeight: 600 }}>Status: Secure</p>
+              {!isMobile && <p style={{ color: '#6b7280', fontSize: '13px', fontWeight: 600 }}>Status: Secure</p>}
             </div>
 
             <motion.button
@@ -430,7 +432,7 @@ export default function UserDashboard({
         </div>
       </section>
 
-      <main className="relative z-10" style={{ padding: '16px 24px 64px' }}>
+      <main className="relative z-10" style={{ padding: isMobile ? '10px 12px 42px' : '16px 24px 64px' }}>
         <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
             <div data-tutorial="dashboard-search" className="lg:col-span-2 rounded-2xl p-5" style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -524,14 +526,16 @@ export default function UserDashboard({
                           {item.cloaked_label}
                         </p>
                       </div>
-                      <div className="min-w-0 text-right">
-                        <p className="text-[10px] uppercase tracking-[0.14em] font-bold" style={{ color: '#71717a' }}>
-                          Masked At
-                        </p>
-                        <p className="text-[11px] truncate" style={{ color: '#a1a1aa' }}>
-                          {new Date(item.timestamp).toLocaleString()}
-                        </p>
-                      </div>
+                      {!isMobile && (
+                        <div className="min-w-0 text-right">
+                          <p className="text-[10px] uppercase tracking-[0.14em] font-bold" style={{ color: '#71717a' }}>
+                            Masked At
+                          </p>
+                          <p className="text-[11px] truncate" style={{ color: '#a1a1aa' }}>
+                            {new Date(item.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-1.5 justify-self-end">

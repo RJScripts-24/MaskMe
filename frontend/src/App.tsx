@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, ArrowRight, ChevronRight, Shield, EyeOff, Upload, Download, Zap, LogOut, CircleHelp } from 'lucide-react';
+import { ChevronDown, ArrowRight, ChevronRight, Shield, EyeOff, Upload, Download, Zap, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { toast, Toaster } from 'sonner';
 import UploadPage from './components/UploadPage';
 import AuthPage from './components/AuthPage';
 import UserDashboard from './components/UserDashboard';
-import GuidedTutorial, { TutorialStep } from './components/tutorial/GuidedTutorial';
-import { usePageTutorial } from './components/tutorial/usePageTutorial';
+import { useIsMobile } from './components/ui/use-mobile';
 
 // Image imports
 import img1 from './assets/img1.png';
@@ -20,39 +19,6 @@ import img7 from './assets/img7.png';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-const HOME_TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    selector: '[data-tutorial="home-nav"]',
-    title: 'Main Navigation',
-    description: 'Use this top bar to move around the product and access key actions quickly.',
-    placement: 'bottom',
-  },
-  {
-    selector: '[data-tutorial="home-hero"]',
-    title: 'Welcome Section',
-    description: 'This section introduces MaskMe and explains what the product does.',
-    placement: 'bottom',
-  },
-  {
-    selector: '[data-tutorial="home-cta"]',
-    title: 'Start Quickly',
-    description: 'Use these call-to-action buttons to open your account and begin masking images.',
-    placement: 'top',
-  },
-  {
-    selector: '[data-tutorial="home-why"]',
-    title: 'Why MaskMe',
-    description: 'This area explains the core privacy and security benefits you get.',
-    placement: 'top',
-  },
-  {
-    selector: '[data-tutorial="home-how"]',
-    title: 'How It Works',
-    description: 'This section shows the full upload-to-protection flow in three simple steps.',
-    placement: 'top',
-  },
-];
-
 interface User {
   email: string;
   name: string;
@@ -62,11 +28,20 @@ interface User {
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'upload' | 'auth' | 'dashboard'>('home');
   const [user, setUser] = useState<User | null>(null);
-  const {
-    isTutorialOpen: isHomeTutorialOpen,
-    startTutorial: startHomeTutorial,
-    closeTutorial: closeHomeTutorial,
-  } = usePageTutorial('home');
+  const isMobile = useIsMobile();
+  const [isLandingCompact, setIsLandingCompact] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 1100;
+  });
+  const isCompactLayout = isMobile || isLandingCompact;
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 1099px)');
+    const onChange = () => setIsLandingCompact(window.innerWidth < 1100);
+    media.addEventListener('change', onChange);
+    onChange();
+    return () => media.removeEventListener('change', onChange);
+  }, []);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -114,17 +89,16 @@ export default function App() {
       ) : (
         <div
           className="min-h-screen"
-          style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+          style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, -apple-system, sans-serif", width: '100vw', maxWidth: '100vw', overflowX: 'hidden' }}
         >
           {/* ======================== NAVBAR ======================== */}
           <motion.nav
-            data-tutorial="home-nav"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 64px', height: '72px', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'relative', zIndex: 100 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isCompactLayout ? '0 14px' : '0 64px', height: isCompactLayout ? '64px' : '72px', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'relative', zIndex: 100 }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '52px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isCompactLayout ? '0px' : '52px' }}>
               <motion.div
                 style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                 onClick={() => setCurrentPage('home')}
@@ -137,7 +111,7 @@ export default function App() {
                 </svg>
               </motion.div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+              <div style={{ display: isCompactLayout ? 'none' : 'flex', alignItems: 'center', gap: '28px' }}>
                 {['HOME', 'FEATURES', 'COMPANY', 'PRIVACY', 'API'].map((link, i) => (
                   <motion.a
                     key={i}
@@ -157,24 +131,10 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <motion.button
-                onClick={startHomeTutorial}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '10px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                  backgroundColor: 'rgba(255,255,255,0.06)', color: '#e4e4e7',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                }}
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <CircleHelp size={15} />
-                Start Tutorial
-              </motion.button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isCompactLayout ? '10px' : '16px' }}>
               {user ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ display: isCompactLayout ? 'none' : 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <img
                       src={user.picture}
                       alt={user.name}
@@ -186,7 +146,7 @@ export default function App() {
                     onClick={handleLogout}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px',
-                      padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+                      padding: isCompactLayout ? '9px 12px' : '10px 22px', borderRadius: '10px', fontSize: isCompactLayout ? '12px' : '14px', fontWeight: 600,
                       backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)',
                     }}
                     whileHover={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', scale: 1.02 }}
@@ -198,20 +158,22 @@ export default function App() {
                 </div>
               ) : (
                 <>
+                  {!isCompactLayout && (
+                    <motion.button
+                      style={{
+                        padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+                        backgroundColor: '#1a1a1a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.07)',
+                      }}
+                      whileHover={{ backgroundColor: '#2a2a2a' }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setCurrentPage(user ? 'dashboard' : 'auth')}
+                    >
+                      Open your account
+                    </motion.button>
+                  )}
                   <motion.button
                     style={{
-                      padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
-                      backgroundColor: '#1a1a1a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.07)',
-                    }}
-                    whileHover={{ backgroundColor: '#2a2a2a' }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setCurrentPage(user ? 'dashboard' : 'auth')}
-                  >
-                    Open your account
-                  </motion.button>
-                  <motion.button
-                    style={{
-                      padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+                      padding: isCompactLayout ? '9px 14px' : '10px 22px', borderRadius: '10px', fontSize: isCompactLayout ? '12px' : '14px', fontWeight: 600,
                       backgroundColor: '#ddd6fe', color: '#000000',
                     }}
                     whileHover={{ backgroundColor: '#c4b5fd' }}
@@ -226,19 +188,21 @@ export default function App() {
           </motion.nav>
 
           {/* ======================== HERO ======================== */}
-          <section data-tutorial="home-hero" style={{ position: 'relative', overflow: 'hidden', padding: '110px 24px 80px', textAlign: 'center' }}>
+          <section style={{ position: 'relative', overflow: 'hidden', padding: isCompactLayout ? '78px 16px 44px' : '110px 24px 80px', textAlign: 'center' }}>
             {/* Ambient glow */}
-            <motion.div
-              style={{
-                position: 'absolute', width: '700px', height: '700px',
-                background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 65%)',
-                top: '-250px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none',
-              }}
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            {!isCompactLayout && (
+              <motion.div
+                style={{
+                  position: 'absolute', width: '700px', height: '700px',
+                  background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 65%)',
+                  top: '-250px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none',
+                }}
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
             {/* Floating dots */}
-            {[...Array(8)].map((_, i) => (
+            {[...Array(isCompactLayout ? 2 : 8)].map((_, i) => (
               <motion.div key={i} style={{
                 position: 'absolute', width: '3px', height: '3px', borderRadius: '50%',
                 backgroundColor: '#8b5cf6', left: `${12 + i * 11}%`, top: `${15 + (i % 3) * 18}%`, pointerEvents: 'none',
@@ -252,7 +216,7 @@ export default function App() {
               <motion.h1
                 style={{
                   fontSize: 'clamp(38px, 6.5vw, 90px)', fontWeight: 500,
-                  lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: '36px',
+                  lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: isCompactLayout ? '24px' : '36px',
                 }}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -262,8 +226,7 @@ export default function App() {
               </motion.h1>
 
               <motion.div
-                data-tutorial="home-cta"
-                style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center', marginBottom: '72px' }}
+                style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center', marginBottom: isCompactLayout ? '34px' : '72px' }}
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -296,10 +259,10 @@ export default function App() {
               {/* White Banner */}
               <motion.div
                 style={{
-                  backgroundColor: '#ffffff', borderRadius: '16px', padding: '18px 24px',
+                  backgroundColor: '#ffffff', borderRadius: '16px', padding: isCompactLayout ? '14px 14px' : '18px 24px',
                   maxWidth: '700px', margin: '0 auto',
                   display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-                  justifyContent: 'space-between', gap: '16px',
+                  justifyContent: 'space-between', gap: isCompactLayout ? '10px' : '16px',
                   boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
                 }}
                 initial={{ opacity: 0, y: 25 }}
@@ -307,7 +270,7 @@ export default function App() {
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '16px', borderRight: '1px solid #e5e7eb' }}>
+                  <div style={{ display: isCompactLayout ? 'none' : 'flex', alignItems: 'center', gap: '10px', paddingRight: '16px', borderRight: '1px solid #e5e7eb' }}>
                     <div style={{ display: 'flex', gap: '2px' }}>
                       {[0,1,2].map(i => (
                         <div key={i} style={{ width: '7px', height: '22px', backgroundColor: '#3b5bdb', borderRadius: '2px', transform: `skewX(-15deg) scaleY(${0.7 + i * 0.15})` }} />
@@ -321,14 +284,14 @@ export default function App() {
                       <path d="M38 28.5C38 33.75 33.75 38 28.5 38C23.25 38 19 33.75 19 28.5C19 23.25 23.25 19 28.5 19C33.75 19 38 23.25 38 28.5Z" fill="#A259FF"/>
                     </svg>
                   </div>
-                  <p style={{ color: '#000', fontSize: '14px', fontWeight: 600, lineHeight: 1.4, maxWidth: '250px', textAlign: 'left' }}>
+                  <p style={{ color: '#000', fontSize: isCompactLayout ? '13px' : '14px', fontWeight: 600, lineHeight: 1.4, maxWidth: isCompactLayout ? '100%' : '250px', textAlign: 'left' }}>
                     {user ? `Ready to mask your next photo, ${(user.name || user.email || 'friend').split(' ')[0]}?` : 'Upload your photo to protect it from AI facial recognition.'}
                   </p>
                 </div>
                 <motion.button
                   style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '11px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+                    padding: isCompactLayout ? '10px 14px' : '11px 22px', borderRadius: '10px', fontSize: isCompactLayout ? '13px' : '14px', fontWeight: 600,
                     border: '1px solid #d1d5db', color: '#000', backgroundColor: '#fff', whiteSpace: 'nowrap',
                   }}
                   whileHover={{ backgroundColor: '#f3f4f6' }}
@@ -341,22 +304,24 @@ export default function App() {
             </div>
           </section>
 
-          {/* ======================== LANDING PAGES SECTION TITLE ======================== */}
-          <section style={{ padding: '80px 64px 24px' }}>
-            <motion.h2
-              style={{ fontSize: '30px', fontWeight: 600, letterSpacing: '-0.02em', color: '#ffffff' }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              Landing Pages
-            </motion.h2>
-          </section>
+          {!isCompactLayout && (
+            <>
+              {/* ======================== LANDING PAGES SECTION TITLE ======================== */}
+              <section style={{ padding: '80px 64px 24px' }}>
+                <motion.h2
+                  style={{ fontSize: '30px', fontWeight: 600, letterSpacing: '-0.02em', color: '#ffffff' }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  Landing Pages
+                </motion.h2>
+              </section>
 
-          {/* ======================== LANDING CARDS GRID ======================== */}
-          <section style={{ padding: '16px 64px 120px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '28px', maxWidth: '1400px', margin: '0 auto' }}>
+              {/* ======================== LANDING CARDS GRID ======================== */}
+              <section style={{ padding: '16px 64px 120px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '28px', maxWidth: '1400px', margin: '0 auto' }}>
 
               {/* ===== CARD 1 — "MASKME IS AN IDEAL SOLUTION..." ===== */}
               <motion.div
@@ -712,21 +677,23 @@ export default function App() {
                 </motion.div>
                 <p style={{ fontSize: '14px', fontWeight: 500, color: '#d4d4d8', paddingLeft: '6px' }}>Landing 6</p>
               </motion.div>
-            </div>
-          </section>
+                </div>
+              </section>
+            </>
+          )}
 
           {/* ======================== WHY MASKME SECTION ======================== */}
-          <section data-tutorial="home-why" style={{ padding: '60px 64px', backgroundColor: '#0f0f0f' }}>
+          <section style={{ padding: isCompactLayout ? '40px 16px' : '60px 64px', backgroundColor: '#0f0f0f' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
               <motion.h2
-                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
+                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: isCompactLayout ? '28px' : '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
                 Why MaskMe?
               </motion.h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isCompactLayout ? '1fr' : 'repeat(3, 1fr)', gap: '20px' }}>
                 {[
                   { icon: <EyeOff strokeWidth={1.5} />, title: 'Invisible Protection', desc: 'MaskMe cloaks your face so AI can\'t recognize you—while keeping you looking the same to humans.', img: img7 },
                   { icon: <Shield strokeWidth={1.5} />, title: 'Defense Against AI Scraping', desc: 'Shield your photos from invasive facial recognition used by social networks, advertisers, and data brokers.', img: img3 },
@@ -763,17 +730,17 @@ export default function App() {
           </section>
 
           {/* ======================== HOW IT WORKS ======================== */}
-          <section data-tutorial="home-how" style={{ padding: '80px 64px', backgroundColor: '#0a0a0a' }}>
+          <section style={{ padding: isCompactLayout ? '48px 16px' : '80px 64px', backgroundColor: '#0a0a0a' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
               <motion.h2
-                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
+                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: isCompactLayout ? '28px' : '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
                 How It Works
               </motion.h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isCompactLayout ? '1fr' : 'repeat(3, 1fr)', gap: '20px' }}>
                 {[
                   { icon: <Upload strokeWidth={1.5} />, step: '01', title: 'Upload Photo', desc: 'Upload a face photo you want to protect from facial recognition AI.' },
                   { icon: <Shield strokeWidth={1.5} />, step: '02', title: 'Privacy Protection', desc: 'MaskMe applies invisible adversarial noise to shield your identity.' },
@@ -831,22 +798,22 @@ export default function App() {
           {/* ======================== FOOTER ======================== */}
           <footer style={{
             backgroundColor: '#ffffff', color: '#000000',
-            borderRadius: '48px 48px 0 0',
-            padding: '80px 64px 48px',
+            borderRadius: isCompactLayout ? '24px 24px 0 0' : '48px 48px 0 0',
+            padding: isCompactLayout ? '36px 16px 28px' : '80px 64px 48px',
           }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: '80px', marginBottom: '72px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isCompactLayout ? '1fr' : '5fr 7fr', gap: isCompactLayout ? '28px' : '80px', marginBottom: isCompactLayout ? '28px' : '72px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                  <svg width="80" height="64" viewBox="0 0 80 64" fill="none">
+                  <svg width={isCompactLayout ? '56' : '80'} height={isCompactLayout ? '44' : '64'} viewBox="0 0 80 64" fill="none">
                     <circle cx="28" cy="36" r="28" fill="#0a0a0a" />
                     <path d="M44 0 L80 64 L44 64 Z" fill="#0a0a0a" />
                   </svg>
-                  <h2 style={{ fontSize: '30px', fontWeight: 500, lineHeight: 1.3, letterSpacing: '-0.02em', maxWidth: '300px' }}>
+                  <h2 style={{ fontSize: isCompactLayout ? '22px' : '30px', fontWeight: 500, lineHeight: 1.3, letterSpacing: '-0.02em', maxWidth: '300px' }}>
                     <span style={{ color: '#000' }}>MaskMe</span>{' '}
                     <span style={{ color: '#a1a1aa' }}>— The all in one Privacy Tool.</span>
                   </h2>
                 </div>
-                <div style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', display: 'grid' }}>
+                {!isCompactLayout && <div style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', display: 'grid' }}>
                   {[
                     { title: 'Solutions', links: ['Photo Masking', 'Batch Processing', 'API Access', 'Enterprise', 'Pricing', 'Documentation'] },
                     { title: 'Company', links: ['About', 'Blog', 'Careers', 'Press Kit', 'Contact'] },
@@ -866,14 +833,14 @@ export default function App() {
                       </div>
                     </div>
                   ))}
-                </div>
+                </div>}
               </div>
 
               <div style={{ height: '1px', backgroundColor: '#e5e7eb', marginBottom: '28px' }} />
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: isCompactLayout ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isCompactLayout ? 'column' : 'row', gap: isCompactLayout ? '10px' : '0px' }}>
                 <p style={{ fontSize: '14px', color: '#666666', fontWeight: 500 }}>By MaskMe Team</p>
-                <div style={{ display: 'flex', gap: '28px' }}>
+                <div style={{ display: 'flex', gap: isCompactLayout ? '16px' : '28px', flexWrap: 'wrap' }}>
                   {['License', 'Terms of Service', 'Privacy Policy'].map((link, i) => (
                     <motion.a key={i} href="#" style={{ fontSize: '14px', color: '#666666', fontWeight: 500, textDecoration: 'none' }}
                       whileHover={{ color: '#000' }}>{link}</motion.a>
@@ -882,13 +849,9 @@ export default function App() {
               </div>
             </div>
           </footer>
-          <GuidedTutorial
-            isOpen={isHomeTutorialOpen}
-            steps={HOME_TUTORIAL_STEPS}
-            onClose={closeHomeTutorial}
-          />
         </div>
       )}
     </GoogleOAuthProvider>
   );
 }
+

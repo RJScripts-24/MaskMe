@@ -1,43 +1,17 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Shield, ChevronDown, CircleHelp } from 'lucide-react';
+import { ArrowLeft, Shield, ChevronDown } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { toast } from 'sonner';
-import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
-import { usePageTutorial } from './tutorial/usePageTutorial';
+import { useIsMobile } from './ui/use-mobile';
 
 interface AuthPageProps {
   onSuccess: (userData: any) => void;
   onBack: () => void;
 }
 
-const AUTH_TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    selector: '[data-tutorial="auth-nav"]',
-    title: 'Navigation',
-    description: 'Use this navbar to return to home at any time.',
-    placement: 'bottom',
-  },
-  {
-    selector: '[data-tutorial="auth-heading"]',
-    title: 'Secure Sign-In',
-    description: 'This section explains why authentication is needed before using personal features.',
-    placement: 'bottom',
-  },
-  {
-    selector: '[data-tutorial="auth-card"]',
-    title: 'Sign In Actions',
-    description: 'Use Google sign-in to create your session and unlock your private dashboard.',
-    placement: 'top',
-  },
-];
-
 export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
-  const {
-    isTutorialOpen,
-    startTutorial,
-    closeTutorial,
-  } = usePageTutorial('auth');
+  const isMobile = useIsMobile();
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -79,7 +53,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
       />
 
       {/* Floating dots - matching Hero */}
-      {[...Array(6)].map((_, i) => (
+      {[...Array(isMobile ? 2 : 6)].map((_, i) => (
         <motion.div key={i} style={{
           position: 'absolute', width: '3px', height: '3px', borderRadius: '50%',
           backgroundColor: '#8b5cf6', left: `${15 + i * 14}%`, top: `${15 + (i % 3) * 20}%`, pointerEvents: 'none',
@@ -91,12 +65,11 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
 
       {/* ======================== MINI NAVBAR ======================== */}
       <motion.nav
-        data-tutorial="auth-nav"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 64px', height: '72px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 50 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 14px' : '0 64px', height: isMobile ? '64px' : '72px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 50 }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '52px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0px' : '52px' }}>
           <motion.div
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             onClick={onBack}
@@ -108,7 +81,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
               <path d="M23 0 L42 34 L23 34 Z" fill="white" />
             </svg>
           </motion.div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+          <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', gap: '28px' }}>
             {['HOME', 'FEATURES', 'COMPANY', 'PRIVACY', 'API'].map((link, i) => (
               <span key={i} style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.8px', color: '#71717a', cursor: 'default', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {link}
@@ -117,29 +90,16 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
             ))}
           </div>
         </div>
-        <motion.button
-          onClick={startTutorial}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '10px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-            backgroundColor: 'rgba(255,255,255,0.06)', color: '#e4e4e7',
-            border: '1px solid rgba(255,255,255,0.12)',
-          }}
-          whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <CircleHelp size={15} />
-          Start Tutorial
-        </motion.button>
       </motion.nav>
 
       {/* ======================== CONTENT ======================== */}
-      <div className="flex flex-col items-center justify-center pt-24 pb-12 px-6 relative z-10">
+      <div className="flex flex-col items-center justify-center pt-24 pb-12 px-6 relative z-10" style={{ paddingTop: isMobile ? '52px' : '96px' }}>
 
         {/* Back link */}
         <motion.button
           onClick={onBack}
           className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-12"
+          style={{ marginBottom: isMobile ? '20px' : '48px' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -150,8 +110,8 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
 
         {/* Main Heading - Matching Hero style but smaller */}
         <motion.div
-          data-tutorial="auth-heading"
           className="text-center mb-16"
+          style={{ marginBottom: isMobile ? '28px' : '64px' }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -160,17 +120,16 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
             Secure Access —{' '}
             <span style={{ color: '#666666' }}>Your privacy starts here.</span>
           </h1>
-          <p style={{ color: '#a1a1aa', fontSize: '18px', maxWidth: '440px', margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ color: '#a1a1aa', fontSize: isMobile ? '15px' : '18px', maxWidth: '440px', margin: '0 auto', lineHeight: 1.6 }}>
             Join 100k+ users who trust MaskMe to protect their digital identity.
           </p>
         </motion.div>
 
         {/* Auth Card - Matching Landings Grid card style */}
         <motion.div
-          data-tutorial="auth-card"
           style={{
             backgroundColor: '#111111', borderRadius: '32px',
-            padding: '48px', width: '100%', maxWidth: '480px',
+            padding: isMobile ? '22px' : '48px', width: '100%', maxWidth: '480px',
             border: '1px solid rgba(255,255,255,0.06)',
             boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
             position: 'relative', overflow: 'hidden'
@@ -192,7 +151,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
               onClick={() => login()}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px',
-                padding: '18px 32px', borderRadius: '14px', fontSize: '16px', fontWeight: 600,
+                padding: isMobile ? '14px 18px' : '18px 32px', borderRadius: '14px', fontSize: isMobile ? '14px' : '16px', fontWeight: 600,
                 backgroundColor: '#ffffff', color: '#000000',
                 boxShadow: '0 10px 40px rgba(255,255,255,0.05)'
               }}
@@ -209,7 +168,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
             </motion.button>
 
             {/* Accent Button - Stylized like the light-purple Landing button */}
-            <motion.button
+            {!isMobile && <motion.button
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px',
                 padding: '18px 32px', borderRadius: '14px', fontSize: '16px', fontWeight: 600,
@@ -219,7 +178,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
               whileTap={{ scale: 0.98 }}
             >
               Contact Support
-            </motion.button>
+            </motion.button>}
 
             <div className="flex flex-col gap-4 mt-4 w-full">
               <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)', width: '100%' }} />
@@ -231,7 +190,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
         </motion.div>
 
         {/* Social Proof / Trust Indicators - matching landing style */}
-        <motion.div
+        {!isMobile && <motion.div
           className="mt-20 flex flex-wrap justify-center gap-12 opacity-40 grayscale"
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
@@ -240,11 +199,11 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           {['TECHCRUCH', 'FORBES', 'WIRED', 'VERGE'].map((brand) => (
             <span key={brand} style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '4px' }}>{brand}</span>
           ))}
-        </motion.div>
+        </motion.div>}
       </div>
 
       {/* Trust Banner - exact copy from landing */}
-      <section style={{ padding: '48px 24px', backgroundColor: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: '80px' }}>
+      <section style={{ padding: isMobile ? '28px 16px' : '48px 24px', backgroundColor: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: isMobile ? '36px' : '80px' }}>
         <motion.div
           style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px' }}
           initial={{ opacity: 0 }}
@@ -259,12 +218,6 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           </p>
         </motion.div>
       </section>
-
-      <GuidedTutorial
-        isOpen={isTutorialOpen}
-        steps={AUTH_TUTORIAL_STEPS}
-        onClose={closeTutorial}
-      />
 
     </div>
   );

@@ -1,10 +1,9 @@
-import { Shield, LogOut, ArrowLeft, CircleHelp } from 'lucide-react';
+import { Shield, LogOut, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { cloakImage, ApiError } from '../services/api';
 import { ShieldResponse } from '../types/api';
-import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
-import { usePageTutorial } from './tutorial/usePageTutorial';
+import { useIsMobile } from './ui/use-mobile';
 
 interface ProcessingScreenProps {
   file: File;
@@ -20,28 +19,8 @@ interface ProcessingScreenProps {
   onError: (error: string) => void;
 }
 
-const PROCESSING_TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    selector: '[data-tutorial="processing-nav"]',
-    title: 'Processing Navigation',
-    description: 'Use this bar to return, relaunch tutorial, or sign out.',
-    placement: 'bottom',
-  },
-  {
-    selector: '[data-tutorial="processing-card"]',
-    title: 'Live Processing Status',
-    description: 'This card shows the current progress while MaskMe protects your image.',
-    placement: 'top',
-  },
-];
-
 export default function ProcessingScreen({ file, files = [], epsilon = 0.03, attackMethod = "FGSM", privacyMode = 'standard', user, onBack, onLogout, onComplete, onBatchComplete, onError }: ProcessingScreenProps) {
-  const {
-    isTutorialOpen,
-    startTutorial,
-    closeTutorial,
-  } = usePageTutorial('processing', { autoStart: false });
-
+  const isMobile = useIsMobile();
   const [processingStatus, setProcessingStatus] = useState<string>('Uploading image...');
   const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
 
@@ -119,14 +98,13 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
       />
 
       <motion.nav
-        data-tutorial="processing-nav"
         className="relative z-40"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
-          height: '72px',
+          padding: isMobile ? '0 12px' : '0 24px',
+          height: isMobile ? '64px' : '72px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}
         initial={{ opacity: 0, y: -20 }}
@@ -149,36 +127,16 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
           <span className="text-lg font-semibold">MaskMe</span>
         </motion.div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <motion.button
-            onClick={startTutorial}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: 600,
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              color: '#e4e4e7',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <CircleHelp size={15} />
-            Start Tutorial
-          </motion.button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
           <motion.button
             onClick={onBack}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 16px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(255,255,255,0.06)',
               color: '#e4e4e7',
@@ -188,7 +146,7 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
             whileTap={{ scale: 0.97 }}
           >
             <ArrowLeft size={16} />
-            Back to Home
+            {!isMobile && 'Back to Home'}
           </motion.button>
 
           <div
@@ -215,10 +173,10 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
+              gap: isMobile ? '0px' : '8px',
+              padding: isMobile ? '8px 10px' : '10px 18px',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: isMobile ? '0px' : '14px',
               fontWeight: 600,
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               color: '#f87171',
@@ -228,24 +186,23 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
             whileTap={{ scale: 0.97 }}
           >
             <LogOut size={16} />
-            Sign Out
+            {!isMobile && 'Sign Out'}
           </motion.button>
         </div>
       </motion.nav>
 
       {/* Main Content - Centered Card */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6" style={{ paddingLeft: isMobile ? '12px' : undefined, paddingRight: isMobile ? '12px' : undefined }}>
         <motion.div
-          data-tutorial="processing-card"
           className="rounded-2xl p-12 max-w-md w-full"
-          style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}
+          style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 40px 80px rgba(0,0,0,0.5)', padding: isMobile ? '24px' : '48px' }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Status Heading */}
           <motion.h1
-            className="text-2xl text-center mb-8 font-medium"
+            className={isMobile ? 'text-xl text-center mb-6 font-medium' : 'text-2xl text-center mb-8 font-medium'}
             style={{ color: '#ffffff' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -430,11 +387,6 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
 
       {/* Bottom spacing */}
       <div className="py-6"></div>
-      <GuidedTutorial
-        isOpen={isTutorialOpen}
-        steps={PROCESSING_TUTORIAL_STEPS}
-        onClose={closeTutorial}
-      />
     </div>
   );
 }
