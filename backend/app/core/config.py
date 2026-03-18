@@ -1,7 +1,7 @@
 import os
+import json
 from pydantic_settings import BaseSettings
 from typing import Optional
-from pydantic import field_validator
 import torch
 
 class Settings(BaseSettings):
@@ -29,28 +29,23 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
 
     # CORS Settings
-    BACKEND_CORS_ORIGINS: list[str] = [
-        "http://localhost:3000",
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-    ]
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000"
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def validate_cors_origins(cls, value):
-        if value is None:
-            return value
-        if isinstance(value, str):
-            raw = value.strip()
-            if not raw:
-                return []
-            if raw.startswith("[") and raw.endswith("]"):
-                # Supports JSON array input from environment variable values.
-                items = raw[1:-1].split(",")
-                return [item.strip().strip('"').strip("'") for item in items if item.strip()]
-            return [item.strip() for item in raw.split(",") if item.strip()]
-        return value
+    def get_cors_origins(self) -> list[str]:
+        raw = (self.BACKEND_CORS_ORIGINS or "").strip()
+        if not raw:
+            return []
+
+        # Accept JSON list or comma-separated values from env providers like Render.
+        if raw.startswith("[") and raw.endswith("]"):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, list):
+                    return [str(item).strip().rstrip("/") for item in parsed if str(item).strip()]
+            except json.JSONDecodeError:
+                pass
+
+        return [item.strip().rstrip("/") for item in raw.split(",") if item.strip()]
 
     class Config:
         env_file = ".env"
