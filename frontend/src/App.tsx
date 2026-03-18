@@ -1,793 +1,798 @@
-import { Shield, Eye, Network, Clock, Upload, Download, Lock, EyeOff } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useState } from 'react';
+import { ChevronDown, ArrowRight, ChevronRight, Shield, EyeOff, Upload, Download, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 import UploadPage from './components/UploadPage';
+import AuthPage from './components/AuthPage';
+
+// Image imports
+import img1 from './assets/img1.png'; // woman with face-scan box
+import img2 from './assets/img2.png'; // woman with mask + face-detection box
+import img3 from './assets/img3.png'; // man with mesh/network face
+import img4 from './assets/img4.png'; // AI brain + masked woman
+import img5 from './assets/img5.png'; // glowing white mask, blue lights
+import img6 from './assets/img6.png'; // dark mask + constellation overlay
+import img7 from './assets/img7.png'; // high-tech face-scan HUD
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'upload'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'upload' | 'auth'>('home');
 
   if (currentPage === 'upload') {
     return <UploadPage onBack={() => setCurrentPage('home')} />;
   }
 
+  if (currentPage === 'auth') {
+    return (
+      <AuthPage 
+        onSuccess={() => setCurrentPage('upload')} 
+        onBack={() => setCurrentPage('home')} 
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
-      {/* Header */}
-      <header className="bg-white border-b" style={{ borderColor: '#E2E8F0' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6" style={{ color: '#2563EB' }} />
-            <span className="text-xl" style={{ color: '#0F172A' }}>MaskMe</span>
-          </div>
-          <nav className="flex gap-8">
-            <a 
-              href="#how-it-works" 
-              className="transition-colors hover:text-[#2563EB]"
-              style={{ color: '#64748B' }}
-            >
-              How It Works
-            </a>
-            <a 
-              href="#privacy" 
-              className="transition-colors hover:text-[#2563EB]"
-              style={{ color: '#64748B' }}
-            >
-              Privacy
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="py-20 px-6 relative overflow-hidden">
-        {/* Upper decorative animations */}
-        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none">
-          {/* Top left animated icon group */}
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+    >
+      {/* ======================== NAVBAR ======================== */}
+      <motion.nav
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 64px', height: '72px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '52px' }}>
           <motion.div
-            className="absolute left-20 top-8"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            onClick={() => setCurrentPage('home')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <motion.div
-              animate={{ 
-                y: [0, -10, 0],
-                rotate: [0, 5, 0]
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <div className="relative">
-                <motion.div
-                  className="absolute inset-0 w-16 h-16 rounded-full blur-xl"
-                  style={{ backgroundColor: '#2563EB', opacity: 0.2 }}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <Shield className="w-8 h-8 relative z-10" style={{ color: '#2563EB', opacity: 0.6 }} strokeWidth={1.5} />
-              </div>
-            </motion.div>
+            <svg width="42" height="34" viewBox="0 0 42 34" fill="none">
+              <circle cx="15" cy="19" r="15" fill="white" />
+              <path d="M23 0 L42 34 L23 34 Z" fill="white" />
+            </svg>
           </motion.div>
 
-          {/* Top right animated icon group */}
-          <motion.div
-            className="absolute right-24 top-12"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <motion.div
-              animate={{ 
-                y: [0, 12, 0],
-                rotate: [0, -8, 0]
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            >
-              <div className="relative">
-                <motion.div
-                  className="absolute inset-0 w-16 h-16 rounded-full blur-xl"
-                  style={{ backgroundColor: '#2563EB', opacity: 0.2 }}
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                />
-                <Lock className="w-7 h-7 relative z-10" style={{ color: '#2563EB', opacity: 0.5 }} strokeWidth={1.5} />
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Top center animated particles */}
-          <div className="absolute left-1/2 top-4 transform -translate-x-1/2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <motion.div
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            {['HOME', 'FEATURES', 'COMPANY', 'PRIVACY', 'API'].map((link, i) => (
+              <motion.a
                 key={i}
-                className="absolute w-1.5 h-1.5 rounded-full"
+                href="#"
                 style={{
-                  backgroundColor: '#2563EB',
-                  left: `${(i - 2) * 40}px`,
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  fontSize: '11px', fontWeight: 700, letterSpacing: '1.8px',
+                  color: i === 0 ? '#ffffff' : '#71717a', textDecoration: 'none',
                 }}
-                animate={{
-                  y: [0, -20, 0],
-                  opacity: [0.3, 0.7, 0.3],
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 2.5 + i * 0.2,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut",
-                }}
-              />
+                whileHover={{ color: '#ffffff' }}
+                transition={{ duration: 0.15 }}
+              >
+                {link}
+                {i > 0 && <ChevronDown style={{ width: '11px', height: '11px' }} strokeWidth={3} />}
+              </motion.a>
             ))}
           </div>
-
-          {/* Floating network nodes */}
-          <motion.div
-            className="absolute left-1/4 top-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ duration: 1, delay: 0.5 }}
-          >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.15, 1],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            >
-              <Network className="w-6 h-6" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="absolute right-1/4 top-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ duration: 1, delay: 0.7 }}
-          >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.1, 1],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            >
-              <Eye className="w-5 h-5" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-            </motion.div>
-          </motion.div>
-
-          {/* Connecting lines between elements */}
-          <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.1 }}>
-            <motion.line
-              x1="20%"
-              y1="50%"
-              x2="50%"
-              y2="30%"
-              stroke="#2563EB"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, delay: 1 }}
-            />
-            <motion.line
-              x1="80%"
-              y1="60%"
-              x2="50%"
-              y2="30%"
-              stroke="#2563EB"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, delay: 1.2 }}
-            />
-          </svg>
         </div>
 
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center relative z-10">
-            <motion.h1 
-              className="text-6xl mb-6 tracking-tight max-w-4xl mx-auto"
-              style={{ color: '#0F172A', lineHeight: '1.1', fontWeight: '700' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            style={{
+              padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+              backgroundColor: '#1a1a1a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.07)',
+            }}
+            whileHover={{ backgroundColor: '#2a2a2a' }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Open your account
+          </motion.button>
+          <motion.button
+            style={{
+              padding: '10px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+              backgroundColor: '#ddd6fe', color: '#000000',
+            }}
+            whileHover={{ backgroundColor: '#c4b5fd' }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setCurrentPage('auth')}
+          >
+            Start Masking
+          </motion.button>
+        </div>
+      </motion.nav>
+
+      {/* ======================== HERO ======================== */}
+      <section style={{ position: 'relative', overflow: 'hidden', padding: '110px 24px 80px', textAlign: 'center' }}>
+        {/* Ambient glow */}
+        <motion.div
+          style={{
+            position: 'absolute', width: '700px', height: '700px',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 65%)',
+            top: '-250px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none',
+          }}
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        {/* Floating dots */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div key={i} style={{
+            position: 'absolute', width: '3px', height: '3px', borderRadius: '50%',
+            backgroundColor: '#8b5cf6', left: `${12 + i * 11}%`, top: `${15 + (i % 3) * 18}%`, pointerEvents: 'none',
+          }}
+            animate={{ y: [0, -35, 0], opacity: [0, 0.7, 0], scale: [0.5, 1.5, 0.5] }}
+            transition={{ duration: 3 + i * 0.4, repeat: Infinity, delay: i * 0.35, ease: 'easeInOut' }}
+          />
+        ))}
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '1140px', margin: '0 auto' }}>
+          <motion.h1
+            style={{
+              fontSize: 'clamp(38px, 6.5vw, 90px)', fontWeight: 500,
+              lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: '36px',
+            }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            Introducing MaskMe —{' '}
+            <span style={{ color: '#666666' }}>the Ultimate Privacy Tool.</span>
+          </motion.h1>
+
+          <motion.div
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center', marginBottom: '72px' }}
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <motion.button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600,
+                backgroundColor: '#ddd6fe', color: '#000000',
+              }}
+              whileHover={{ scale: 1.04, boxShadow: '0 12px 40px rgba(139,92,246,0.3)' }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setCurrentPage('auth')}
             >
-              Protect Your Face from{' '}
-              <span style={{ color: '#2563EB' }}>AI Tracking.</span>
-            </motion.h1>
-            
-            <motion.p 
-              className="text-xl mb-8 max-w-2xl mx-auto"
-              style={{ color: '#334155', lineHeight: '1.6' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Upload photos safely without breaking how you look.
-            </motion.p>
-            
-            <motion.button 
-              className="px-8 py-3 rounded-lg transition-all hover:shadow-lg"
-              style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setCurrentPage('upload')}
-            >
-              Upload Photo
+              Try MaskMe Now <ArrowRight style={{ width: '18px', height: '18px' }} />
             </motion.button>
-            
-            <motion.div 
-              className="mt-6 space-y-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+            <motion.button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600,
+                backgroundColor: '#1a1a1a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.07)',
+              }}
+              whileHover={{ scale: 1.04, backgroundColor: '#222222' }}
+              whileTap={{ scale: 0.97 }}
             >
-              <p className="text-sm" style={{ color: '#64748B' }}>
-                Your image is processed securely.
-              </p>
-              <p className="text-sm" style={{ color: '#64748B' }}>
-                No visual distortion.
-              </p>
-            </motion.div>
-          </div>
-          
-          {/* Animated decorative elements */}
-          <div className="mt-16 relative h-64">
-            {/* Left side - Privacy Shield Animation */}
-            <motion.div
-              className="absolute left-10 top-0 w-64 h-64"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              <motion.div
-                animate={{ y: [0, -20, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative w-full h-full"
-              >
-                {/* Glowing background circle */}
-                <motion.div
-                  className="absolute inset-0 rounded-full blur-3xl"
-                  style={{ backgroundColor: '#2563EB', opacity: 0.15 }}
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                />
-                
-                {/* Main shield container */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    className="relative"
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    {/* Shield with lock */}
-                    <div className="relative w-32 h-32 flex items-center justify-center">
-                      <Shield 
-                        className="w-full h-full" 
-                        style={{ color: '#2563EB', opacity: 0.3 }} 
-                        strokeWidth={1}
-                      />
-                      <motion.div
-                        className="absolute"
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                      >
-                        <Lock className="w-12 h-12" style={{ color: '#2563EB' }} strokeWidth={2} />
-                      </motion.div>
-                    </div>
-                    
-                    {/* Orbiting particles */}
-                    {[0, 1, 2, 3].map((index) => (
-                      <motion.div
-                        key={index}
-                        className="absolute w-3 h-3 rounded-full"
-                        style={{ 
-                          backgroundColor: '#2563EB',
-                          top: '50%',
-                          left: '50%',
-                        }}
-                        animate={{
-                          x: [
-                            Math.cos((index * Math.PI) / 2) * 60,
-                            Math.cos((index * Math.PI) / 2 + Math.PI) * 60,
-                          ],
-                          y: [
-                            Math.sin((index * Math.PI) / 2) * 60,
-                            Math.sin((index * Math.PI) / 2 + Math.PI) * 60,
-                          ],
-                          opacity: [0.5, 1, 0.5],
-                        }}
-                        transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "linear",
-                          delay: index * 0.5,
-                        }}
-                      />
-                    ))}
-                  </motion.div>
-                </div>
-              </motion.div>
-            </motion.div>
+              Browse Features <ChevronRight style={{ width: '18px', height: '18px' }} />
+            </motion.button>
+          </motion.div>
 
-            {/* Right side - Face Protection Visualization */}
-            <motion.div
-              className="absolute right-10 top-0 w-64 h-64"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-              <motion.div
-                animate={{ y: [0, 20, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="relative w-full h-full"
-              >
-                {/* Glowing background circle */}
-                <motion.div
-                  className="absolute inset-0 rounded-full blur-3xl"
-                  style={{ backgroundColor: '#2563EB', opacity: 0.15 }}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                />
-                
-                {/* Face protection visualization */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div className="relative">
-                    {/* Scanning lines effect */}
-                    <motion.div
-                      className="absolute inset-0 w-40 h-40 rounded-lg border-2"
-                      style={{ borderColor: '#2563EB', opacity: 0.3 }}
-                      animate={{
-                        borderColor: ['#2563EB', '#64748B', '#2563EB'],
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    >
-                      <motion.div
-                        className="absolute w-full h-0.5"
-                        style={{ backgroundColor: '#2563EB', opacity: 0.5 }}
-                        animate={{
-                          top: ['0%', '100%'],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      />
-                    </motion.div>
-                    
-                    {/* Center eye-off icon */}
-                    <div className="w-40 h-40 flex items-center justify-center">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.15, 1],
-                          opacity: [0.7, 1, 0.7]
-                        }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <EyeOff className="w-16 h-16" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-                      </motion.div>
-                    </div>
-                    
-                    {/* Corner brackets */}
-                    {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner, index) => (
-                      <motion.div
-                        key={corner}
-                        className="absolute w-6 h-6 border-2"
-                        style={{
-                          borderColor: '#2563EB',
-                          ...(corner === 'top-left' && { top: 0, left: 0, borderRight: 'none', borderBottom: 'none' }),
-                          ...(corner === 'top-right' && { top: 0, right: 0, borderLeft: 'none', borderBottom: 'none' }),
-                          ...(corner === 'bottom-left' && { bottom: 0, left: 0, borderRight: 'none', borderTop: 'none' }),
-                          ...(corner === 'bottom-right' && { bottom: 0, right: 0, borderLeft: 'none', borderTop: 'none' }),
-                        }}
-                        animate={{
-                          opacity: [0.5, 1, 0.5],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: index * 0.2,
-                        }}
-                      />
-                    ))}
-                  </motion.div>
+          {/* White Banner */}
+          <motion.div
+            style={{
+              backgroundColor: '#ffffff', borderRadius: '16px', padding: '18px 24px',
+              maxWidth: '700px', margin: '0 auto',
+              display: 'flex', flexWrap: 'wrap', alignItems: 'center',
+              justifyContent: 'space-between', gap: '16px',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
+            }}
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '16px', borderRight: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: '7px', height: '22px', backgroundColor: '#3b5bdb', borderRadius: '2px', transform: `skewX(-15deg) scaleY(${0.7 + i * 0.15})` }} />
+                  ))}
                 </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Center floating particles */}
-            <div className="absolute inset-0 pointer-events-none">
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: '#2563EB',
-                    left: `${20 + i * 10}%`,
-                    top: `${30 + (i % 3) * 20}%`,
-                  }}
-                  animate={{
-                    y: [0, -30, 0],
-                    opacity: [0, 0.6, 0],
-                  }}
-                  transition={{
-                    duration: 3 + i * 0.3,
-                    repeat: Infinity,
-                    delay: i * 0.4,
-                    ease: "easeInOut",
-                  }}
-                />
-              ))}
+                <svg viewBox="0 0 38 57" style={{ width: '22px', height: '22px' }} fill="none">
+                  <path d="M19 28.5C19 33.75 14.75 38 9.5 38C4.25 38 0 33.75 0 28.5C0 23.25 4.25 19 9.5 19C14.75 19 19 23.25 19 28.5Z" fill="#1ABCFE"/>
+                  <path d="M0 47.5C0 52.75 4.25 57 9.5 57C14.75 57 19 52.75 19 47.5V38H9.5C4.25 38 0 42.25 0 47.5Z" fill="#0ACF83"/>
+                  <path d="M19 0H9.5C4.25 0 0 4.25 0 9.5C0 14.75 4.25 19 9.5 19H19V0Z" fill="#F24E1E"/>
+                  <path d="M19 19H28.5C33.75 19 38 14.75 38 9.5C38 4.25 33.75 0 28.5 0H19V19Z" fill="#FF7262"/>
+                  <path d="M38 28.5C38 33.75 33.75 38 28.5 38C23.25 38 19 33.75 19 28.5C19 23.25 23.25 19 28.5 19C33.75 19 38 23.25 38 28.5Z" fill="#A259FF"/>
+                </svg>
+              </div>
+              <p style={{ color: '#000', fontSize: '14px', fontWeight: 600, lineHeight: 1.4, maxWidth: '250px', textAlign: 'left' }}>
+                Upload your photo to protect it from AI facial recognition.
+              </p>
             </div>
-          </div>
+            <motion.button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '11px 22px', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
+                border: '1px solid #d1d5db', color: '#000', backgroundColor: '#fff', whiteSpace: 'nowrap',
+              }}
+              whileHover={{ backgroundColor: '#f3f4f6' }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setCurrentPage('auth')}
+            >
+              Upload now <ArrowRight style={{ width: '14px', height: '14px' }} />
+            </motion.button>
+          </motion.div>
         </div>
       </section>
 
-      {/* Why MaskMe Section */}
-      <section className="py-16 px-6" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="max-w-6xl mx-auto">
-          <motion.h2 
-            className="text-3xl text-center mb-12" 
-            style={{ color: '#0F172A' }}
+      {/* ======================== LANDING PAGES SECTION TITLE ======================== */}
+      <section style={{ padding: '80px 64px 24px' }}>
+        <motion.h2
+          style={{ fontSize: '30px', fontWeight: 600, letterSpacing: '-0.02em', color: '#ffffff' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          Landing Pages
+        </motion.h2>
+      </section>
+
+      {/* ======================== LANDING CARDS GRID ======================== */}
+      <section style={{ padding: '16px 64px 120px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '28px', maxWidth: '1400px', margin: '0 auto' }}>
+
+          {/* ===== CARD 1 — "MASKME IS AN IDEAL SOLUTION..." ===== */}
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div
+              style={{
+                backgroundColor: '#2a2a2a', borderRadius: '28px',
+                padding: '10px', cursor: 'pointer', position: 'relative', overflow: 'hidden',
+              }}
+              whileHover="hover"
+              initial="rest"
+            >
+              {/* Hover glow overlay */}
+              <motion.div
+                style={{
+                  position: 'absolute', inset: 0, borderRadius: '28px', pointerEvents: 'none',
+                  background: 'radial-gradient(circle at 25% 25%, rgba(139,92,246,0.1), transparent 55%)',
+                }}
+                variants={{ rest: { opacity: 0 }, hover: { opacity: 1 } }}
+                transition={{ duration: 0.3 }}
+              />
+
+              {/* Inner screen */}
+              <div style={{
+                position: 'relative', overflow: 'hidden', borderRadius: '20px',
+                aspectRatio: '16/10', backgroundColor: '#0f0f0f',
+                border: '1px solid rgba(255,255,255,0.04)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+              }}>
+                {/* Purple glow top-left */}
+                <div style={{
+                  position: 'absolute', width: '180px', height: '180px',
+                  background: 'radial-gradient(circle, rgba(88,28,235,0.7), transparent 70%)',
+                  top: '-60px', left: '-30px', filter: 'blur(40px)', pointerEvents: 'none',
+                }} />
+
+                {/* Top-right target icon */}
+                <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3 }}>
+                  <div style={{
+                    width: '38px', height: '38px', backgroundColor: '#d4d4d8',
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <div style={{ width: '16px', height: '16px', border: '2.5px solid #000', borderRadius: '50%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '4px', height: '4px', backgroundColor: '#000', borderRadius: '50%' }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main text */}
+                <div style={{
+                  position: 'absolute', top: '50%', left: '50%',
+                  transform: 'translate(-50%, -70%)', zIndex: 2,
+                  textAlign: 'center', width: '70%',
+                }}>
+                  <h3 style={{
+                    fontSize: 'clamp(12px, 1.6vw, 20px)', fontWeight: 700,
+                    color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase',
+                    letterSpacing: '1.5px', lineHeight: 1.5,
+                  }}>
+                    MASKME IS AN IDEAL SOLUTION FOR THE PRIVACY OF YOUR PHOTOS
+                  </h3>
+                </div>
+
+                {/* Bottom card with image */}
+                <motion.div
+                  style={{
+                    position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                    width: '52%', height: '45%',
+                    backgroundColor: '#1c1c1c',
+                    borderRadius: '14px 14px 0 0',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderBottom: 'none', overflow: 'hidden',
+                    zIndex: 2,
+                  }}
+                  variants={{
+                    rest: { y: 0 },
+                    hover: { y: -8, boxShadow: '0 -20px 60px rgba(139,92,246,0.15)' },
+                  }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                >
+                  <img src={img1} alt="Face scan visualization" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', opacity: 0.85 }} />
+                  {/* Scan-line overlay animation */}
+                  <motion.div
+                    style={{
+                      position: 'absolute', left: 0, right: 0, height: '2px',
+                      background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.8), transparent)',
+                    }}
+                    animate={{ top: ['0%', '100%'] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.5 }}
+                  />
+                  {/* Corner brackets */}
+                  {[
+                    { top: '12px', left: '12px', borderRight: 'none', borderBottom: 'none' },
+                    { top: '12px', right: '12px', borderLeft: 'none', borderBottom: 'none' },
+                  ].map((style, i) => (
+                    <motion.div key={i} style={{
+                      position: 'absolute', width: '14px', height: '14px',
+                      border: '2px solid rgba(139,92,246,0.8)', ...style,
+                    }}
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                    />
+                  ))}
+                </motion.div>
+              </div>
+            </motion.div>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#d4d4d8', paddingLeft: '6px' }}>Landing 1</p>
+          </motion.div>
+
+          {/* ===== CARD 2 — "LET MASKME BE YOUR GUIDING LIGHT" ===== */}
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <motion.div
+              style={{ backgroundColor: '#2a2a2a', borderRadius: '28px', padding: '10px', cursor: 'pointer' }}
+              whileHover="hover"
+              initial="rest"
+            >
+              <div style={{
+                position: 'relative', overflow: 'hidden', borderRadius: '20px',
+                aspectRatio: '16/10', backgroundColor: '#0a0a0a',
+                border: '1px solid rgba(255,255,255,0.04)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {/* Full bleed background image with parallax effect */}
+                <motion.img
+                  src={img5}
+                  alt="Privacy mask concept"
+                  style={{
+                    position: 'absolute', inset: 0, width: '100%', height: '115%',
+                    objectFit: 'cover', objectPosition: 'center top',
+                    filter: 'brightness(0.45) saturate(0.8)',
+                  }}
+                  variants={{
+                    rest: { scale: 1, y: 0 },
+                    hover: { scale: 1.07, y: -12 },
+                  }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                />
+
+                {/* Gradient overlay */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)',
+                }} />
+
+                {/* Top gradient line */}
+                <div style={{
+                  position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                  background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.6), transparent)',
+                }} />
+
+                {/* Content (above image) */}
+                <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 48px' }}>
+                  {/* Pill badge */}
+                  <motion.div
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      padding: '5px 14px', backgroundColor: 'rgba(30,30,30,0.8)',
+                      border: '1px solid rgba(167,139,250,0.2)', borderRadius: '50px',
+                      marginBottom: '24px', backdropFilter: 'blur(8px)',
+                    }}
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <div style={{ width: '6px', height: '6px', backgroundColor: '#a78bfa', borderRadius: '50%' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#a78bfa', textTransform: 'uppercase' }}>
+                      Security
+                    </span>
+                  </motion.div>
+
+                  <motion.h3
+                    style={{
+                      fontSize: 'clamp(20px, 2.8vw, 36px)', fontWeight: 400,
+                      color: '#ffffff', lineHeight: 1.15, letterSpacing: '-0.02em',
+                      textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+                    }}
+                    variants={{ rest: { opacity: 0.9 }, hover: { opacity: 1 } }}
+                  >
+                    Let MaskMe be your guiding light to online excellence
+                  </motion.h3>
+                </div>
+              </div>
+            </motion.div>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#d4d4d8', paddingLeft: '6px' }}>Landing 2</p>
+          </motion.div>
+
+          {/* ===== CARD 3 — TEAM GRID (Landing 5 equivalent) ===== */}
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+          >
+            <motion.div
+              style={{ backgroundColor: '#2a2a2a', borderRadius: '28px', padding: '10px', cursor: 'pointer' }}
+              whileHover="hover"
+              initial="rest"
+            >
+              <div style={{
+                position: 'relative', overflow: 'hidden', borderRadius: '20px',
+                aspectRatio: '16/10', backgroundColor: '#0f0f0f',
+                border: '1px solid rgba(255,255,255,0.04)',
+                padding: '28px 28px 0',
+                display: 'flex', flexDirection: 'column',
+              }}>
+                {/* Top action bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <div style={{ width: '70px', height: '28px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px' }} />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ width: '90px', height: '28px', backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', letterSpacing: '1px' }}>MASKING</span>
+                    </div>
+                    <div style={{ width: '90px', height: '28px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px' }} />
+                  </div>
+                </div>
+                <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)', margin: '8px 0 20px' }} />
+
+                {/* 3-column grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', flex: 1 }}>
+                  {[img3, img4, img6].map((imgSrc, i) => (
+                    <motion.div
+                      key={i}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                    >
+                      <p style={{
+                        fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.3)',
+                        textAlign: 'center', textTransform: 'uppercase',
+                        letterSpacing: '0.8px', lineHeight: 1.4,
+                        paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                        Adept minds behind MaskMe
+                      </p>
+                      <motion.div
+                        style={{
+                          flex: 1, borderRadius: '12px', overflow: 'hidden',
+                          border: '1px solid rgba(255,255,255,0.05)',
+                          minHeight: '90px', position: 'relative',
+                        }}
+                        variants={{
+                          rest: { scale: 1 },
+                          hover: { scale: 1.03 },
+                        }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                      >
+                        <img src={imgSrc} alt="" style={{
+                          width: '100%', height: '100%', objectFit: 'cover',
+                          objectPosition: 'top center', filter: 'brightness(0.75)',
+                        }} />
+                        {/* Bottom gradient fade */}
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
+                          background: 'linear-gradient(to bottom, transparent, rgba(15,15,15,0.9))',
+                        }} />
+                        {/* Label */}
+                        <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, textAlign: 'center' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Make your vision a reality
+                          </span>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#d4d4d8', paddingLeft: '6px' }}>Landing 5</p>
+          </motion.div>
+
+          {/* ===== CARD 4 — SPLIT IMAGE + STATS (Landing 6 equivalent) ===== */}
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            <motion.div
+              style={{ backgroundColor: '#2a2a2a', borderRadius: '28px', padding: '10px', cursor: 'pointer' }}
+              whileHover="hover"
+              initial="rest"
+            >
+              <div style={{
+                position: 'relative', overflow: 'hidden', borderRadius: '20px',
+                aspectRatio: '16/10', backgroundColor: '#0f0f0f',
+                border: '1px solid rgba(255,255,255,0.04)',
+                display: 'flex', gap: '10px', padding: '10px',
+              }}>
+                {/* Left: Real image */}
+                <motion.div
+                  style={{
+                    flex: '1.3', borderRadius: '14px', overflow: 'hidden', position: 'relative',
+                  }}
+                  variants={{
+                    rest: { scale: 1 },
+                    hover: { scale: 1.03 },
+                  }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                >
+                  <img src={img2} alt="Person with face detection overlay" style={{
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    objectPosition: 'center top', filter: 'brightness(0.9)',
+                  }} />
+                  {/* Scan box overlay mimicking the detection box in the image */}
+                  <motion.div
+                    style={{
+                      position: 'absolute', top: '20%', left: '22%', right: '22%', bottom: '10%',
+                      border: '2px solid rgba(139,92,246,0.5)', borderRadius: '4px', pointerEvents: 'none',
+                    }}
+                    animate={{ opacity: [0.3, 0.7, 0.3], borderColor: ['rgba(139,92,246,0.3)', 'rgba(139,92,246,0.8)', 'rgba(139,92,246,0.3)'] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                  {/* Top badge */}
+                  <div style={{
+                    position: 'absolute', top: '12px', left: '12px',
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: '6px',
+                    padding: '3px 8px', backdropFilter: 'blur(8px)',
+                  }}>
+                    <div style={{ width: '5px', height: '5px', backgroundColor: '#4ade80', borderRadius: '50%' }} />
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff', letterSpacing: '1px' }}>AI ACTIVE</span>
+                  </div>
+                </motion.div>
+
+                {/* Right: Stacked cards */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Stats card */}
+                  <motion.div
+                    style={{
+                      flex: 1, backgroundColor: '#151515', borderRadius: '14px',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      padding: '20px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                      overflow: 'hidden', position: 'relative',
+                    }}
+                    variants={{ rest: { y: 0 }, hover: { y: -4 } }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <img src={img7} alt="" style={{
+                      position: 'absolute', inset: 0, width: '100%', height: '100%',
+                      objectFit: 'cover', opacity: 0.12, filter: 'saturate(0)',
+                    }} />
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                      <h4 style={{ fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 500, color: '#fff', lineHeight: 1, marginBottom: '6px' }}>
+                        8.4%
+                      </h4>
+                      <p style={{ fontSize: '9px', color: '#666666', lineHeight: 1.5 }}>
+                        Invest. Curabitur blandit tempus porttitor aliquet vestibulum ex...
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  {/* Logo / symbol card */}
+                  <motion.div
+                    style={{
+                      flex: 1, backgroundColor: '#ddd6fe', borderRadius: '14px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden', position: 'relative',
+                    }}
+                    variants={{ rest: { y: 0 }, hover: { y: -4 } }}
+                    transition={{ duration: 0.3, delay: 0.05 }}
+                  >
+                    <img src={img6} alt="" style={{
+                      position: 'absolute', inset: 0, width: '100%', height: '100%',
+                      objectFit: 'cover', opacity: 0.18, mixBlendMode: 'multiply',
+                    }} />
+                    {/* Intersecting circle SVG logo */}
+                    <svg width="60" height="38" viewBox="0 0 60 38" fill="none" style={{ position: 'relative', zIndex: 1 }}>
+                      <circle cx="20" cy="19" r="19" fill="#0a0a0a" />
+                      <circle cx="40" cy="19" r="19" fill="#0a0a0a" opacity="0.75" />
+                    </svg>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: '#d4d4d8', paddingLeft: '6px' }}>Landing 6</p>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* ======================== WHY MASKME SECTION ======================== */}
+      <section style={{ padding: '60px 64px', backgroundColor: '#0f0f0f' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <motion.h2
+            style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
           >
             Why MaskMe?
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <motion.div 
-              className="p-8 rounded-lg border relative overflow-hidden group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0',
-                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.1)' }}
-            >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+            {[
+              { icon: <EyeOff strokeWidth={1.5} />, title: 'Invisible Protection', desc: 'MaskMe cloaks your face so AI can\'t recognize you—while keeping you looking the same to humans.', img: img7 },
+              { icon: <Shield strokeWidth={1.5} />, title: 'Defense Against AI Scraping', desc: 'Shield your photos from invasive facial recognition used by social networks, advertisers, and data brokers.', img: img3 },
+              { icon: <Zap strokeWidth={1.5} />, title: 'Simple & Lightning Fast', desc: 'Upload a photo, let MaskMe work in seconds, and download your protected image. No setup needed.', img: img1 },
+            ].map((card, i) => (
               <motion.div
-                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <Eye className="w-12 h-12 mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                Invisible Protection
-              </h3>
-              <p style={{ color: '#334155' }}>
-                MaskMe cloaks your face so AI can't recognize you online—while keeping you looking the same to humans.
-              </p>
-            </motion.div>
-
-            {/* Card 2 */}
-            <motion.div 
-              className="p-8 rounded-lg border relative overflow-hidden group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0',
-                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.1)' }}
-            >
-              <motion.div
-                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <Network className="w-12 h-12 mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                Defense Against AI Face-Scraping
-              </h3>
-              <p style={{ color: '#334155' }}>
-                Shield your photos from invasive facial recognition used by social networks, advertisers, and data brokers.
-              </p>
-            </motion.div>
-
-            {/* Card 3 */}
-            <motion.div 
-              className="p-8 rounded-lg border relative overflow-hidden group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0',
-                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.1)' }}
-            >
-              <motion.div
-                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <Clock className="w-12 h-12 mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                Simple & Fast
-              </h3>
-              <p style={{ color: '#334155' }}>
-                Upload a photo, let MaskMe do the work in seconds, and download your protected image.
-              </p>
-            </motion.div>
+                key={i}
+                style={{
+                  padding: '36px 28px', borderRadius: '20px',
+                  backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.05)',
+                  position: 'relative', overflow: 'hidden',
+                }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                whileHover={{ y: -6, borderColor: 'rgba(139,92,246,0.2)', boxShadow: '0 20px 60px rgba(139,92,246,0.07)' }}
+              >
+                <img src={card.img} alt="" style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%',
+                  objectFit: 'cover', opacity: 0.06, filter: 'saturate(0)',
+                }} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ width: '44px', height: '44px', color: '#8b5cf6', marginBottom: '18px' }}>
+                    {card.icon}
+                  </div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 600, marginBottom: '10px', color: '#f4f4f5' }}>{card.title}</h3>
+                  <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#71717a' }}>{card.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 px-6 relative overflow-hidden" style={{ backgroundColor: '#F8FAFC' }}>
-        {/* Animated background elements */}
-        <motion.div
-          className="absolute top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5"
-          style={{ backgroundColor: '#2563EB' }}
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.08, 0.05]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5"
-          style={{ backgroundColor: '#2563EB' }}
-          animate={{ 
-            scale: [1, 1.3, 1],
-            opacity: [0.05, 0.08, 0.05]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.h2 
-            className="text-3xl text-center mb-12" 
-            style={{ color: '#0F172A' }}
+      {/* ======================== HOW IT WORKS ======================== */}
+      <section style={{ padding: '80px 64px', backgroundColor: '#0a0a0a' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <motion.h2
+            style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
           >
             How It Works
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Dotted connectors */}
-            <motion.div 
-              className="hidden md:block absolute top-20 left-1/3 w-1/3 border-t-2 border-dotted" 
-              style={{ borderColor: '#CBD5E1' }}
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            />
-            <motion.div 
-              className="hidden md:block absolute top-20 right-0 w-1/3 border-t-2 border-dotted" 
-              style={{ borderColor: '#CBD5E1' }}
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            />
-
-            {/* Step 1 */}
-            <motion.div 
-              className="p-8 rounded-lg border text-center relative z-10 group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0'
-              }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -8, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.15)' }}
-            >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+            {[
+              { icon: <Upload strokeWidth={1.5} />, step: '01', title: 'Upload Photo', desc: 'Upload a face photo you want to protect from facial recognition AI.' },
+              { icon: <Shield strokeWidth={1.5} />, step: '02', title: 'Privacy Protection', desc: 'MaskMe applies invisible adversarial noise to shield your identity.' },
+              { icon: <Download strokeWidth={1.5} />, step: '03', title: 'Download Result', desc: 'Download your protected photo — looks the same, secured against AI.' },
+            ].map((step, i) => (
               <motion.div
-                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity duration-300"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <motion.div
-                whileInView={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                key={i}
+                style={{
+                  padding: '40px 32px', borderRadius: '20px', backgroundColor: '#141414',
+                  border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', position: 'relative',
+                }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                whileHover={{ y: -8, boxShadow: '0 20px 60px rgba(139,92,246,0.08)' }}
               >
-                <Upload className="w-12 h-12 mx-auto mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
+                <div style={{
+                  position: 'absolute', top: '-14px', right: '-8px',
+                  width: '36px', height: '36px', backgroundColor: '#8b5cf6', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '11px', fontWeight: 700, color: '#fff',
+                  boxShadow: '0 4px 20px rgba(139,92,246,0.5)',
+                }}>
+                  {step.step}
+                </div>
+                <div style={{ width: '48px', height: '48px', color: '#8b5cf6', margin: '0 auto 18px' }}>
+                  {step.icon}
+                </div>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '10px', color: '#f4f4f5' }}>{step.title}</h3>
+                <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#71717a' }}>{step.desc}</p>
               </motion.div>
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                1. Upload Photo
-              </h3>
-              <p style={{ color: '#334155' }}>
-                Upload a face photo you want to protect.
-              </p>
-              {/* Step number badge */}
-              <div 
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-xs"
-                style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
-              >
-                1
-              </div>
-            </motion.div>
-
-            {/* Step 2 */}
-            <motion.div 
-              className="p-8 rounded-lg border text-center relative z-10 group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0'
-              }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ y: -8, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.15)' }}
-            >
-              <motion.div
-                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity duration-300"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <motion.div
-                whileInView={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Shield className="w-12 h-12 mx-auto mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-              </motion.div>
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                2. Privacy Protection
-              </h3>
-              <p style={{ color: '#334155' }}>
-                MaskMe applies invisible noise to shield your identity from facial recognition.
-              </p>
-              {/* Step number badge */}
-              <div 
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-xs"
-                style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
-              >
-                2
-              </div>
-            </motion.div>
-
-            {/* Step 3 */}
-            <motion.div 
-              className="p-8 rounded-lg border text-center relative z-10 group"
-              style={{ 
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E2E8F0'
-              }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              whileHover={{ y: -8, boxShadow: '0 10px 25px -5px rgb(37 99 235 / 0.15)' }}
-            >
-              <motion.div
-                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity duration-300"
-                style={{ backgroundColor: '#2563EB' }}
-              />
-              <motion.div
-                whileInView={{ y: [0, -8, 0] }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                viewport={{ once: true }}
-              >
-                <Download className="w-12 h-12 mx-auto mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-              </motion.div>
-              <h3 className="mb-3" style={{ color: '#0F172A' }}>
-                3. Download Result
-              </h3>
-              <p style={{ color: '#334155' }}>
-                Download your protected photo—looks the same, but secured against AI tracking.
-              </p>
-              {/* Step number badge */}
-              <div 
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-xs"
-                style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
-              >
-                3
-              </div>
-            </motion.div>
+            ))}
           </div>
-
-          {/* Additional trust indicators */}
-          <motion.div 
-            className="mt-12 flex justify-center gap-12 flex-wrap"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <motion.div 
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-            >
-              <svg className="w-5 h-5" style={{ color: '#2563EB' }} fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm" style={{ color: '#334155' }}>
-                Does not visibly alter your face
-              </span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-            >
-              <svg className="w-5 h-5" style={{ color: '#2563EB' }} fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm" style={{ color: '#334155' }}>
-                Built with privacy-first technology
-              </span>
-            </motion.div>
-          </motion.div>
         </div>
       </section>
 
-      {/* Trust & Privacy Banner */}
-      <section className="py-8 px-6" style={{ backgroundColor: '#F1F5F9' }}>
-        <motion.div 
-          className="max-w-4xl mx-auto flex items-center justify-center gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
+      {/* ======================== TRUST BANNER ======================== */}
+      <section style={{ padding: '36px 24px', backgroundColor: '#111111', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <motion.div
+          style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px' }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
         >
-          <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Shield className="w-8 h-8" style={{ color: '#2563EB' }} strokeWidth={1.5} />
+          <motion.div animate={{ rotate: [0, 6, -6, 0] }} transition={{ duration: 3, repeat: Infinity }}>
+            <Shield style={{ width: '28px', height: '28px', color: '#8b5cf6' }} strokeWidth={1.5} />
           </motion.div>
-          <p className="text-center" style={{ color: '#334155' }}>
-            Your images are processed securely. Photos are not saved on the server.
+          <p style={{ fontSize: '15px', color: '#a1a1aa', textAlign: 'center' }}>
+            Your images are processed securely. Photos are never saved on our servers.
           </p>
         </motion.div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-6 bg-white border-t" style={{ borderColor: '#E2E8F0' }}>
-        <motion.div 
-          className="max-w-6xl mx-auto text-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.div 
-            className="flex justify-center gap-6"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <motion.a 
-              href="#github" 
-              className="transition-colors"
-              style={{ color: '#2563EB' }}
-              whileHover={{ scale: 1.1 }}
-            >
-              GitHub
-            </motion.a>
-            <motion.a 
-              href="#linkedin" 
-              className="transition-colors"
-              style={{ color: '#2563EB' }}
-              whileHover={{ scale: 1.1 }}
-            >
-              LinkedIn
-            </motion.a>
-            <motion.a 
-              href="#privacy" 
-              className="transition-colors"
-              style={{ color: '#2563EB' }}
-              whileHover={{ scale: 1.1 }}
-            >
-              Privacy Policy
-            </motion.a>
-          </motion.div>
-        </motion.div>
+      {/* ======================== FOOTER ======================== */}
+      <footer style={{
+        backgroundColor: '#ffffff', color: '#000000',
+        borderRadius: '48px 48px 0 0',
+        padding: '80px 64px 48px',
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: '80px', marginBottom: '72px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              <svg width="80" height="64" viewBox="0 0 80 64" fill="none">
+                <circle cx="28" cy="36" r="28" fill="#0a0a0a" />
+                <path d="M44 0 L80 64 L44 64 Z" fill="#0a0a0a" />
+              </svg>
+              <h2 style={{ fontSize: '30px', fontWeight: 500, lineHeight: 1.3, letterSpacing: '-0.02em', maxWidth: '300px' }}>
+                <span style={{ color: '#000' }}>MaskMe</span>{' '}
+                <span style={{ color: '#a1a1aa' }}>— The all in one Privacy Tool.</span>
+              </h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
+              {[
+                { title: 'Solutions', links: ['Photo Masking', 'Batch Processing', 'API Access', 'Enterprise', 'Pricing', 'Documentation'] },
+                { title: 'Company', links: ['About', 'Blog', 'Careers', 'Press Kit', 'Contact'] },
+                { title: 'Follow us', links: ['Twitter', 'GitHub', 'Dribbble', 'LinkedIn', 'YouTube'] },
+              ].map((col, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+                  <h4 style={{ fontSize: '17px', fontWeight: 700 }}>{col.title}</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {col.links.map((link, j) => (
+                      <motion.a
+                        key={j} href="#"
+                        style={{ fontSize: '15px', color: '#666666', fontWeight: 500, textDecoration: 'none' }}
+                        whileHover={{ color: '#000000', x: 4 }}
+                        transition={{ duration: 0.15 }}
+                      >{link}</motion.a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: '1px', backgroundColor: '#e5e7eb', marginBottom: '28px' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '14px', color: '#666666', fontWeight: 500 }}>By MaskMe Team</p>
+            <div style={{ display: 'flex', gap: '28px' }}>
+              {['License', 'Terms of Service', 'Privacy Policy'].map((link, i) => (
+                <motion.a key={i} href="#" style={{ fontSize: '14px', color: '#666666', fontWeight: 500, textDecoration: 'none' }}
+                  whileHover={{ color: '#000' }}>{link}</motion.a>
+              ))}
+            </div>
+          </div>
+        </div>
       </footer>
+
     </div>
   );
 }

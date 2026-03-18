@@ -77,7 +77,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
   // State for X-Ray Mode toggle
   const [showNoise, setShowNoise] = useState(false);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
-  
+
   // State for Robustness Lab
   const [testResult, setTestResult] = useState<{
     type: string;
@@ -152,18 +152,18 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
     try {
       setIsTestingRobustness(true);
       setTestResult(null);
-      
+
       // Convert base64 protected image to File
       const response = await fetch(protectedImage);
       const blob = await response.blob();
       const file = new File([blob], 'cloaked-image.png', { type: 'image/png' });
-      
+
       // Call the robustness test API
       const result = await testRobustness(file, testType);
-      
+
       // Check if attack survived (label is still different from original)
       const survived = result.new_label !== apiResponse.original_label;
-      
+
       setTestResult({
         type: testType,
         label: result.new_label,
@@ -171,7 +171,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
         image: `data:image/png;base64,${result.transformed_image}`,
         survived
       });
-      
+
     } catch (error) {
       console.error('Robustness test failed:', error);
       alert('Failed to run robustness test. Please try again.');
@@ -295,7 +295,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                     <motion.button
                       onClick={() => setShowNoise(!showNoise)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors text-sm"
-                      style={{ 
+                      style={{
                         backgroundColor: showNoise ? COLOR_PRIMARY : '#FFFFFF',
                         borderColor: showNoise ? COLOR_PRIMARY : '#CBD5E1',
                         color: showNoise ? '#FFFFFF' : '#64748B'
@@ -399,8 +399,8 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               onClick={handleDownloadReport}
               disabled={isDownloadingReport}
               className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center border-2"
-              style={{ 
-                backgroundColor: isDownloadingReport ? '#F1F5F9' : '#FFFFFF', 
+              style={{
+                backgroundColor: isDownloadingReport ? '#F1F5F9' : '#FFFFFF',
                 borderColor: isDownloadingReport ? '#CBD5E1' : '#16A34A',
                 color: isDownloadingReport ? '#94A3B8' : '#16A34A',
                 cursor: isDownloadingReport ? 'not-allowed' : 'pointer'
@@ -440,7 +440,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                   🧪 Robustness Lab - Simulate Real World Conditions
                 </h3>
               </div>
-              
+
               <p className="mb-6" style={{ color: COLOR_SUBTEXT }}>
                 Test if your attack survives real-world transformations like compression, blur, and resize operations.
               </p>

@@ -26,7 +26,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
   // If result screen should be shown
   if (showResultScreen && uploadedImage && protectedImage && apiResponse) {
     return (
-      <ResultScreen 
+      <ResultScreen
         originalImage={uploadedImage}
         protectedImage={protectedImage}
         apiResponse={apiResponse}
@@ -47,7 +47,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
   // If processing screen should be shown
   if (showProcessingScreen && uploadedFile) {
     return (
-      <ProcessingScreen 
+      <ProcessingScreen
         file={uploadedFile}
         epsilon={epsilon}
         attackMethod={attackMethod}
@@ -141,7 +141,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
         <motion.div
           className="fixed top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5 pointer-events-none"
           style={{ backgroundColor: '#2563EB' }}
-          animate={{ 
+          animate={{
             scale: [1, 1.2, 1],
             opacity: [0.05, 0.08, 0.05]
           }}
@@ -150,7 +150,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
         <motion.div
           className="fixed bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5 pointer-events-none"
           style={{ backgroundColor: '#2563EB' }}
-          animate={{ 
+          animate={{
             scale: [1, 1.3, 1],
             opacity: [0.05, 0.08, 0.05]
           }}
@@ -159,7 +159,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
 
         <div className="max-w-7xl mx-auto">
           {/* Page Title */}
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,7 +174,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
             {error && (
               <motion.div
                 className="mt-4 mx-auto max-w-lg p-4 rounded-lg border"
-                style={{ 
+                style={{
                   backgroundColor: '#FEF2F2',
                   borderColor: '#FECACA',
                   color: '#DC2626'
@@ -196,10 +196,9 @@ export default function UploadPage({ onBack }: UploadPageProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div
-                className={`bg-white border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] transition-all duration-300 ${
-                  isDragging ? 'border-[#2563EB] bg-[#EFF6FF]' : ''
-                }`}
-                style={{ 
+                className={`bg-white border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] transition-all duration-300 ${isDragging ? 'border-[#2563EB] bg-[#EFF6FF]' : ''
+                  }`}
+                style={{
                   borderColor: isDragging ? '#2563EB' : '#CBD5E1',
                   backgroundColor: isDragging ? '#EFF6FF' : '#FFFFFF'
                 }}
@@ -219,9 +218,9 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                         animate={{ y: [0, -10, 0] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                       >
-                        <Upload 
-                          className="w-16 h-16 mx-auto mb-6" 
-                          style={{ color: '#2563EB', opacity: 0.6 }} 
+                        <Upload
+                          className="w-16 h-16 mx-auto mb-6"
+                          style={{ color: '#2563EB', opacity: 0.6 }}
                           strokeWidth={1.5}
                         />
                       </motion.div>
@@ -239,7 +238,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                         />
                         <div
                           className="px-8 py-3 rounded-lg transition-colors mb-4"
-                          style={{ 
+                          style={{
                             backgroundColor: '#F1F5F9',
                             border: '1px solid #E2E8F0',
                             color: '#334155'
@@ -255,17 +254,17 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                     </>
                   ) : (
                     <div className="w-full">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Uploaded" 
+                      <img
+                        src={uploadedImage}
+                        alt="Uploaded"
                         className="w-full h-auto rounded-lg mb-6"
                       />
-                      
+
                       {/* Stealth Slider */}
                       {!protectedImage && (
                         <motion.div
                           className="mb-6 p-4 rounded-lg"
-                          style={{ 
+                          style={{
                             backgroundColor: '#F8FAFC',
                             border: '1px solid #E2E8F0'
                           }}
@@ -274,16 +273,16 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           transition={{ delay: 0.1 }}
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <label 
-                              htmlFor="stealth-slider" 
+                            <label
+                              htmlFor="stealth-slider"
                               className="text-sm font-medium"
                               style={{ color: '#334155' }}
                             >
                               Stealth Strength
                             </label>
-                            <span 
+                            <span
                               className="text-sm font-mono px-2 py-1 rounded"
-                              style={{ 
+                              style={{
                                 backgroundColor: '#EFF6FF',
                                 color: '#2563EB',
                                 border: '1px solid #BFDBFE'
@@ -314,12 +313,12 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           </p>
                         </motion.div>
                       )}
-                      
+
                       {/* Attack Method Dropdown */}
                       {!protectedImage && (
                         <motion.div
                           className="mb-6 p-4 rounded-lg"
-                          style={{ 
+                          style={{
                             backgroundColor: '#F8FAFC',
                             border: '1px solid #E2E8F0'
                           }}
@@ -327,8 +326,8 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.15 }}
                         >
-                          <label 
-                            htmlFor="attack-method" 
+                          <label
+                            htmlFor="attack-method"
                             className="text-sm font-medium mb-3 block"
                             style={{ color: '#334155' }}
                           >
@@ -353,12 +352,12 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           </p>
                         </motion.div>
                       )}
-                      
+
                       {!protectedImage && (
                         <motion.button
                           onClick={handleMaskClick}
                           className="w-full py-3 rounded-lg mb-3 transition-all"
-                          style={{ 
+                          style={{
                             backgroundColor: '#2563EB',
                             color: '#FFFFFF'
                           }}
@@ -374,7 +373,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           </span>
                         </motion.button>
                       )}
-                      
+
                       <button
                         onClick={() => {
                           setUploadedImage(null);
@@ -384,7 +383,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           setError(null);
                         }}
                         className="w-full px-6 py-2 rounded-lg transition-colors"
-                        style={{ 
+                        style={{
                           backgroundColor: '#F1F5F9',
                           color: '#334155',
                           border: '1px solid #E2E8F0'
@@ -419,7 +418,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
             >
               <div
                 className="rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] border"
-                style={{ 
+                style={{
                   backgroundColor: '#F1F5F9',
                   borderColor: '#E2E8F0'
                 }}
@@ -442,16 +441,16 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                     </p>
                   </motion.div>
                 ) : protectedImage ? (
-                  <motion.div 
+                  <motion.div
                     className="w-full"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
                   >
                     <div className="relative mb-6">
-                      <img 
-                        src={protectedImage} 
-                        alt="Protected" 
+                      <img
+                        src={protectedImage}
+                        alt="Protected"
                         className="w-full h-auto rounded-lg"
                       />
                       <motion.div
@@ -465,10 +464,10 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                         <span className="text-sm" style={{ color: '#FFFFFF' }}>Protected</span>
                       </motion.div>
                     </div>
-                    
+
                     <motion.button
                       className="w-full py-3 rounded-lg transition-all"
-                      style={{ 
+                      style={{
                         backgroundColor: '#2563EB',
                         color: '#FFFFFF'
                       }}
@@ -489,13 +488,13 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.5 }}
                   >
-                    <div 
+                    <div
                       className="w-24 h-24 mx-auto mb-4 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: '#E2E8F0' }}
                     >
-                      <Shield 
-                        className="w-12 h-12" 
-                        style={{ color: '#64748B', opacity: 0.4 }} 
+                      <Shield
+                        className="w-12 h-12"
+                        style={{ color: '#64748B', opacity: 0.4 }}
                         strokeWidth={1.5}
                       />
                     </div>

@@ -19,19 +19,19 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
     const processImage = async () => {
       try {
         setProcessingStatus('Uploading image...');
-        
+
         // Call the actual API
         const response = await cloakImage(file, epsilon, attackMethod);
-        
+
         setProcessingStatus('Protection applied!');
-        
+
         // Wait a brief moment to show success message
         setTimeout(() => {
           onComplete(response);
         }, 500);
       } catch (error) {
         console.error('Error cloaking image:', error);
-        
+
         if (error instanceof ApiError) {
           if (error.details) {
             const errorMsg = error.details.detail
@@ -56,7 +56,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
       <motion.div
         className="fixed top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5 pointer-events-none"
         style={{ backgroundColor: '#2563EB' }}
-        animate={{ 
+        animate={{
           scale: [1, 1.2, 1],
           opacity: [0.05, 0.08, 0.05]
         }}
@@ -65,7 +65,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
       <motion.div
         className="fixed bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5 pointer-events-none"
         style={{ backgroundColor: '#2563EB' }}
-        animate={{ 
+        animate={{
           scale: [1, 1.3, 1],
           opacity: [0.05, 0.08, 0.05]
         }}
@@ -73,7 +73,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
       />
 
       {/* Header */}
-      <motion.header 
+      <motion.header
         className="py-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -95,7 +95,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Status Heading */}
-          <motion.h1 
+          <motion.h1
             className="text-2xl text-center mb-8"
             style={{ color: '#0F172A' }}
             initial={{ opacity: 0 }}
@@ -107,7 +107,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
 
           {/* Shield Illustration */}
           <div className="flex justify-center mb-8">
-            <motion.div 
+            <motion.div
               className="relative w-32 h-32"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -117,7 +117,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
               <motion.div
                 className="absolute inset-0 rounded-full blur-2xl"
                 style={{ backgroundColor: '#2563EB', opacity: 0.1 }}
-                animate={{ 
+                animate={{
                   scale: [1, 1.2, 1],
                   opacity: [0.1, 0.15, 0.1]
                 }}
@@ -127,21 +127,21 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
               {/* Main Shield Icon */}
               <motion.div
                 className="relative w-full h-full flex items-center justify-center"
-                animate={{ 
+                animate={{
                   rotate: [0, 360]
                 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               >
-                <Shield 
-                  className="w-full h-full" 
-                  style={{ color: '#94A3B8' }} 
+                <Shield
+                  className="w-full h-full"
+                  style={{ color: '#94A3B8' }}
                   strokeWidth={1}
                   fill="none"
                 />
               </motion.div>
 
               {/* Inner animated arc/progress indicator */}
-              <svg 
+              <svg
                 className="absolute inset-0 w-full h-full"
                 viewBox="0 0 100 100"
                 style={{ transform: 'rotate(-90deg)' }}
@@ -155,13 +155,13 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                   fill="none"
                   strokeLinecap="round"
                   initial={{ pathLength: 0 }}
-                  animate={{ 
+                  animate={{
                     pathLength: [0, 0.7, 0],
                     opacity: [0.5, 1, 0.5]
                   }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity, 
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 />
@@ -173,7 +173,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                   <motion.div
                     key={i}
                     className="absolute w-2 h-2 rounded-full"
-                    style={{ 
+                    style={{
                       backgroundColor: '#2563EB',
                       left: '50%',
                       top: '50%'
@@ -207,7 +207,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                 <motion.div
                   key={`orbit-${i}`}
                   className="absolute w-1.5 h-1.5 rounded-full"
-                  style={{ 
+                  style={{
                     backgroundColor: '#2563EB',
                     left: '50%',
                     top: '50%'
@@ -235,7 +235,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           </div>
 
           {/* Divider Line */}
-          <motion.div 
+          <motion.div
             className="h-px w-full mb-6"
             style={{ backgroundColor: '#E2E8F0' }}
             initial={{ scaleX: 0 }}
@@ -244,7 +244,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           />
 
           {/* Reassurance Message */}
-          <motion.p 
+          <motion.p
             className="text-center text-sm"
             style={{ color: '#64748B' }}
             initial={{ opacity: 0 }}
@@ -255,7 +255,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           </motion.p>
 
           {/* Pulsing dots animation */}
-          <motion.div 
+          <motion.div
             className="flex justify-center gap-1.5 mt-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
