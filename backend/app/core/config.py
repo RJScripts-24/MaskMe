@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000"
+    BACKEND_CORS_ORIGIN_REGEX: Optional[str] = None
 
     def get_cors_origins(self) -> list[str]:
         raw = (self.BACKEND_CORS_ORIGINS or "").strip()
