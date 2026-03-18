@@ -1,9 +1,9 @@
 
-import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText, Zap, MessageCircle, Wind, Globe } from 'lucide-react';
+import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText, Zap, MessageCircle, Wind, Globe, LogOut, ArrowLeft, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ShieldResponse } from '../types/api';
+import { ShieldResponse, VerifyResponse } from '../types/api';
 import { useState } from 'react';
-import { testRobustness } from '../services/api';
+import { testRobustness, verifyMasking } from '../services/api';
 
 // Shared color constants - DARK THEME (matching landing page)
 const COLOR_PRIMARY = '#8b5cf6';
@@ -31,8 +31,10 @@ interface ResultScreenProps {
   originalImage: string;
   protectedImage: string;
   apiResponse: ShieldResponse;
+  user: { name: string; email: string; picture: string } | null;
   onTryAnother: () => void;
   onBack: () => void;
+  onLogout: () => void;
 }
 
 interface StatusCardProps {
@@ -73,7 +75,7 @@ function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, sub
   );
 }
 
-export default function ResultScreen({ originalImage, protectedImage, apiResponse, onTryAnother, onBack }: ResultScreenProps) {
+export default function ResultScreen({ originalImage, protectedImage, apiResponse, user, onTryAnother, onBack, onLogout }: ResultScreenProps) {
   // State for X-Ray Mode toggle
   const [showNoise, setShowNoise] = useState(false);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
@@ -87,6 +89,10 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
     survived: boolean;
   } | null>(null);
   const [isTestingRobustness, setIsTestingRobustness] = useState(false);
+
+  // State for Verify Masking
+  const [verificationResult, setVerificationResult] = useState<VerifyResponse | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -114,12 +120,19 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
         cloaked_confidence: apiResponse.cloaked_confidence
       };
 
+      // Prepare headers
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Send POST request to backend with full URL
       const response = await fetch(`${API_BASE_URL}/api/v1/shield/report`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify(reportData),
       });
 
@@ -180,10 +193,32 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
     }
   };
 
+  const handleVerifyMasking = async () => {
+    try {
+      setIsVerifying(true);
+      setVerificationResult(null);
+
+      // Convert base64 protected image to File
+      const response = await fetch(protectedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'cloaked-image.png', { type: 'image/png' });
+
+      // Call the verification API
+      const result = await verifyMasking(file);
+      setVerificationResult(result);
+    } catch (error) {
+      console.error('Verification failed:', error);
+      alert('Failed to verify masking. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   // Format confidence scores as percentages
   const originalConfidencePercent = (apiResponse.original_confidence * 100).toFixed(1);
   const cloakedConfidencePercent = (apiResponse.cloaked_confidence * 100).toFixed(1);
   const protectionEffectiveness = ((apiResponse.original_confidence - apiResponse.cloaked_confidence) / apiResponse.original_confidence * 100).toFixed(1);
+  const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLOR_BG, color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -200,23 +235,99 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
         animate={{ scale: [1, 1.3, 1], opacity: [0.02, 0.05, 0.02] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
       />
-      {/* Header */}
-      <header style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#0a0a0a' }}>
-        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6" style={{ color: COLOR_PRIMARY }} />
-            <span className="text-xl font-semibold" style={{ color: COLOR_HEADER_TEXT }}>MaskMe</span>
+      <motion.nav
+        className="relative z-40"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          height: '72px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="cursor-pointer"
+          onClick={onBack}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.22)' }}
+          >
+            <Shield className="w-4 h-4" style={{ color: COLOR_PRIMARY }} />
           </div>
+          <span className="text-lg font-semibold" style={{ color: COLOR_HEADER_TEXT }}>MaskMe</span>
+        </motion.div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <motion.button
             onClick={onBack}
-            className="flex items-center gap-2 transition-colors px-4 py-2 rounded-xl"
-            style={{ color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' }}
-            whileHover={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.07)' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
           >
-            <span className="text-sm font-medium">Back to Home</span>
+            <ArrowLeft size={16} />
+            Back to Home
+          </motion.button>
+
+          <div
+            className="hidden sm:flex"
+            style={{
+              alignItems: 'center',
+              gap: '10px',
+              padding: '6px 12px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <img
+              src={user?.picture}
+              alt={primaryName}
+              style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(139,92,246,0.5)' }}
+            />
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>{primaryName}</span>
+          </div>
+
+          <motion.button
+            onClick={onLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(239,68,68,0.2)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <LogOut size={16} />
+            Sign Out
           </motion.button>
         </div>
-      </header>
+      </motion.nav>
 
       {/* Main Content */}
       <main className="py-16 px-6">
@@ -254,8 +365,8 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <section
-                className="bg-white border rounded-2xl overflow-hidden"
-                style={{ borderColor: COLOR_CARD_BORDER }}
+                className="border rounded-2xl overflow-hidden"
+                style={{ borderColor: COLOR_CARD_BORDER, backgroundColor: COLOR_CARD_BG }}
                 aria-label="Original Image"
               >
                 <div className="p-4 border-b" style={{ borderColor: COLOR_CARD_BORDER }}>
@@ -283,8 +394,8 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <section
-                className="bg-white border rounded-2xl overflow-hidden"
-                style={{ borderColor: COLOR_CARD_BORDER }}
+                className="border rounded-2xl overflow-hidden"
+                style={{ borderColor: COLOR_CARD_BORDER, backgroundColor: COLOR_CARD_BG }}
                 aria-label="Masked Image (Protected)"
               >
                 <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: COLOR_CARD_BORDER }}>
@@ -296,11 +407,11 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                       onClick={() => setShowNoise(!showNoise)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors text-sm"
                       style={{
-                        backgroundColor: showNoise ? COLOR_PRIMARY : '#FFFFFF',
-                        borderColor: showNoise ? COLOR_PRIMARY : '#CBD5E1',
-                        color: showNoise ? '#FFFFFF' : '#64748B'
+                        backgroundColor: showNoise ? COLOR_PRIMARY : 'rgba(255,255,255,0.05)',
+                        borderColor: showNoise ? COLOR_PRIMARY : 'rgba(255,255,255,0.1)',
+                        color: showNoise ? '#FFFFFF' : '#a1a1aa'
                       }}
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.05, backgroundColor: showNoise ? COLOR_PRIMARY : 'rgba(255,255,255,0.1)' }}
                       whileTap={{ scale: 0.95 }}
                     >
                       {showNoise ? (
@@ -336,6 +447,70 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                     >
                       <Shield className="w-4 h-4" style={{ color: '#FFFFFF' }} strokeWidth={2} />
                       <span className="text-sm" style={{ color: '#FFFFFF' }}>Protected</span>
+                    </motion.div>
+                  )}
+                </div>
+                {/* Verify Masking Button */}
+                <div className="px-6 py-4 border-t flex flex-col gap-3" style={{ borderColor: COLOR_CARD_BORDER, backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm" style={{ color: COLOR_SUBTEXT }}>Verify against MobileNetV2</span>
+                    <motion.button
+                      onClick={handleVerifyMasking}
+                      disabled={isVerifying}
+                      className="flex items-center gap-2 transition-all"
+                      style={{
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        backgroundColor: isVerifying ? '#a1a1aa' : '#ddd6fe',
+                        color: '#000000',
+                        cursor: isVerifying ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                      }}
+                      whileHover={!isVerifying ? { scale: 1.04, boxShadow: '0 8px 30px rgba(139,92,246,0.25)' } : {}}
+                      whileTap={!isVerifying ? { scale: 0.97 } : {}}
+                    >
+                      {isVerifying ? (
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Search className="w-4 h-4" strokeWidth={2.5} />
+                      )}
+                      <span>{isVerifying ? 'VERIFYING...' : 'VERIFY MASKING'}</span>
+                    </motion.button>
+                  </div>
+
+                  {verificationResult && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 rounded-[20px] border flex items-center gap-4 mt-2"
+                      style={{
+                        backgroundColor: verificationResult.label !== apiResponse.original_label ? 'rgba(16, 185, 129, 0.04)' : 'rgba(239, 68, 68, 0.04)',
+                        borderColor: verificationResult.label !== apiResponse.original_label ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <div className={`p-2 rounded-full flex-shrink-0 ${verificationResult.label !== apiResponse.original_label ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
+                        {verificationResult.label !== apiResponse.original_label ? (
+                          <Check className="w-5 h-5 text-emerald-400" strokeWidth={2.5} />
+                        ) : (
+                          <X className="w-5 h-5 text-red-400" strokeWidth={2.5} />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span style={{ color: '#a1a1aa', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                          Independent Model Analysis
+                        </span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-sm font-semibold" style={{ color: verificationResult.label !== apiResponse.original_label ? '#34d399' : '#f87171' }}>
+                            {verificationResult.label}
+                          </span>
+                          <span style={{ color: '#71717a', fontSize: '12px' }}>
+                            ({verificationResult.confidence.toFixed(1)}% match)
+                          </span>
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </div>
@@ -385,43 +560,43 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
             {/* PRIMARY BUTTON - Download */}
             <motion.button
               onClick={handleDownload}
-              className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center"
-              style={{ backgroundColor: COLOR_PRIMARY, color: '#FFFFFF' }}
-              whileHover={{ scale: 1.03 }}
+              className="px-8 py-4 rounded-[12px] flex items-center gap-3 text-base min-w-[260px] justify-center font-semibold"
+              style={{ backgroundColor: COLOR_PRIMARY, color: '#FFFFFF', boxShadow: '0 8px 30px rgba(139,92,246,0.2)' }}
+              whileHover={{ scale: 1.04, boxShadow: '0 12px 40px rgba(139,92,246,0.3)' }}
               whileTap={{ scale: 0.97 }}
             >
-              <Download className="w-5 h-5" strokeWidth={2} />
-              Download Protected Image
+              <Download className="w-5 h-5" strokeWidth={2.5} />
+              <span>DOWNLOAD PROTECTED</span>
             </motion.button>
 
             {/* SECONDARY BUTTON - Download Report */}
             <motion.button
               onClick={handleDownloadReport}
               disabled={isDownloadingReport}
-              className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center border-2"
+              className="px-8 py-4 rounded-[12px] flex items-center gap-3 text-base min-w-[260px] justify-center border-2 font-semibold"
               style={{
-                backgroundColor: isDownloadingReport ? '#F1F5F9' : '#FFFFFF',
-                borderColor: isDownloadingReport ? '#CBD5E1' : '#16A34A',
-                color: isDownloadingReport ? '#94A3B8' : '#16A34A',
+                backgroundColor: isDownloadingReport ? 'rgba(255,255,255,0.03)' : 'rgba(16, 185, 129, 0.05)',
+                borderColor: isDownloadingReport ? 'rgba(255,255,255,0.05)' : '#10b981',
+                color: isDownloadingReport ? '#71717a' : '#34d399',
                 cursor: isDownloadingReport ? 'not-allowed' : 'pointer'
               }}
-              whileHover={!isDownloadingReport ? { scale: 1.03 } : {}}
+              whileHover={!isDownloadingReport ? { scale: 1.04, backgroundColor: 'rgba(16, 185, 129, 0.1)' } : {}}
               whileTap={!isDownloadingReport ? { scale: 0.97 } : {}}
             >
-              <FileText className="w-5 h-5" strokeWidth={2} />
-              {isDownloadingReport ? 'Generating...' : '📄 Download Security Certificate'}
+              <FileText className="w-5 h-5" strokeWidth={2.5} />
+              <span>{isDownloadingReport ? 'GENERATING...' : 'AUDIT REPORT'}</span>
             </motion.button>
 
             {/* TERTIARY BUTTON - Try Another */}
             <motion.button
               onClick={onTryAnother}
-              className="px-8 py-3 rounded-lg flex items-center gap-2 text-lg min-w-[260px] justify-center border-2"
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#CBD5E1', color: '#334155' }}
-              whileHover={{ scale: 1.03, borderColor: COLOR_PRIMARY, color: COLOR_PRIMARY }}
+              className="px-8 py-4 rounded-[12px] flex items-center gap-3 text-base min-w-[260px] justify-center border-2 font-semibold"
+              style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#ffffff' }}
+              whileHover={{ scale: 1.04, borderColor: COLOR_PRIMARY, backgroundColor: 'rgba(255,255,255,0.06)' }}
               whileTap={{ scale: 0.97 }}
             >
-              <Upload className="w-5 h-5" strokeWidth={2} />
-              Try Another Image
+              <Upload className="w-5 h-5" strokeWidth={2.5} />
+              <span>TRY ANOTHER IMAGE</span>
             </motion.button>
           </motion.div>
 
@@ -452,18 +627,18 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                   disabled={isTestingRobustness}
                   className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
                   style={{
-                    backgroundColor: testResult?.type === 'jpeg' ? '#FEF3C7' : '#FFFFFF',
-                    borderColor: testResult?.type === 'jpeg' ? '#F59E0B' : '#CBD5E1',
-                    color: COLOR_HEADER_TEXT,
+                    backgroundColor: testResult?.type === 'jpeg' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(255,255,255,0.03)',
+                    borderColor: testResult?.type === 'jpeg' ? '#F59E0B' : 'rgba(255,255,255,0.1)',
+                    color: '#ffffff',
                     cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
                     opacity: isTestingRobustness ? 0.6 : 1
                   }}
-                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#F59E0B' } : {}}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.05)' } : {}}
                   whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
                 >
                   <MessageCircle className="w-6 h-6" style={{ color: '#F59E0B' }} strokeWidth={2} />
-                  <span className="font-semibold">📱 Simulate WhatsApp</span>
-                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>JPEG Compression</span>
+                  <span className="font-semibold text-sm">📱 Simulate WhatsApp</span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-60">JPEG Compression</span>
                 </motion.button>
 
                 <motion.button
@@ -471,18 +646,18 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                   disabled={isTestingRobustness}
                   className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
                   style={{
-                    backgroundColor: testResult?.type === 'blur' ? '#E0E7FF' : '#FFFFFF',
-                    borderColor: testResult?.type === 'blur' ? '#6366F1' : '#CBD5E1',
-                    color: COLOR_HEADER_TEXT,
+                    backgroundColor: testResult?.type === 'blur' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.03)',
+                    borderColor: testResult?.type === 'blur' ? '#6366F1' : 'rgba(255,255,255,0.1)',
+                    color: '#ffffff',
                     cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
                     opacity: isTestingRobustness ? 0.6 : 1
                   }}
-                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#6366F1' } : {}}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#6366F1', backgroundColor: 'rgba(99, 102, 241, 0.05)' } : {}}
                   whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
                 >
                   <Wind className="w-6 h-6" style={{ color: '#6366F1' }} strokeWidth={2} />
-                  <span className="font-semibold">🌫️ Simulate Motion</span>
-                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>Gaussian Blur</span>
+                  <span className="font-semibold text-sm">🌫️ Simulate Motion</span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-60">Gaussian Blur</span>
                 </motion.button>
 
                 <motion.button
@@ -490,18 +665,18 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
                   disabled={isTestingRobustness}
                   className="px-6 py-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all"
                   style={{
-                    backgroundColor: testResult?.type === 'resize' ? '#DBEAFE' : '#FFFFFF',
-                    borderColor: testResult?.type === 'resize' ? '#3B82F6' : '#CBD5E1',
-                    color: COLOR_HEADER_TEXT,
+                    backgroundColor: testResult?.type === 'resize' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255,255,255,0.03)',
+                    borderColor: testResult?.type === 'resize' ? '#3B82F6' : 'rgba(255,255,255,0.1)',
+                    color: '#ffffff',
                     cursor: isTestingRobustness ? 'not-allowed' : 'pointer',
                     opacity: isTestingRobustness ? 0.6 : 1
                   }}
-                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#3B82F6' } : {}}
+                  whileHover={!isTestingRobustness ? { scale: 1.02, borderColor: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.05)' } : {}}
                   whileTap={!isTestingRobustness ? { scale: 0.98 } : {}}
                 >
                   <Globe className="w-6 h-6" style={{ color: '#3B82F6' }} strokeWidth={2} />
-                  <span className="font-semibold">🌐 Simulate Social Upload</span>
-                  <span className="text-xs" style={{ color: COLOR_SUBTEXT }}>Downscale/Upscale</span>
+                  <span className="font-semibold text-sm">🌐 Simulate Social</span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-60">Downscale/Upscale</span>
                 </motion.button>
               </div>
 

@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, ShieldResponse, HTTPValidationError } from '../types/api';
+import { API_ENDPOINTS, ShieldResponse, HTTPValidationError, VerifyResponse } from '../types/api';
 
 /**
  * API Service for communicating with the Face-Shield backend
@@ -17,6 +17,17 @@ export class ApiError extends Error {
     super(message);
     this.name = 'ApiError';
   }
+}
+
+/**
+ * Helper to get auth headers
+ */
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('token');
+  if (token) {
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
 }
 
 /**
@@ -43,6 +54,9 @@ export async function cloakImage(
     const response = await fetch(url.toString(), {
       method: 'POST',
       body: formData,
+      headers: {
+        ...getAuthHeaders(),
+      }
     });
 
     if (!response.ok) {
@@ -74,6 +88,42 @@ export async function cloakImage(
 }
 
 /**
+ * Verify that the applied masking works against other models
+ * POST /api/v1/shield/verify
+ * @param file - Masked image file to verify
+ * @returns VerifyResponse with model's prediction
+ */
+export async function verifyMasking(file: File): Promise<VerifyResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const url = new URL(API_ENDPOINTS.VERIFY_MASKING, API_BASE_URL);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...getAuthHeaders(),
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 422) {
+        const error: HTTPValidationError = await response.json();
+        throw new ApiError('Validation error', 422, error);
+      }
+      throw new ApiError(`API request failed: ${response.statusText}`, response.status);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`, 0);
+  }
+}
+
+/**
  * Check API health status
  * GET /api/v1/health/
  * @returns Health check response
@@ -83,7 +133,7 @@ export async function healthCheck(): Promise<{ status: string }> {
 
   try {
     const response = await fetch(url.toString());
-    
+
     if (!response.ok) {
       throw new ApiError(
         `Health check failed: ${response.statusText}`,
@@ -112,7 +162,7 @@ export async function getRoot(): Promise<any> {
 
   try {
     const response = await fetch(url.toString());
-    
+
     if (!response.ok) {
       throw new ApiError(
         `Root endpoint failed: ${response.statusText}`,
@@ -158,6 +208,9 @@ export async function testRobustness(
     const response = await fetch(url.toString(), {
       method: 'POST',
       body: formData,
+      headers: {
+        ...getAuthHeaders(),
+      }
     });
 
     if (!response.ok) {
@@ -185,6 +238,71 @@ export async function testRobustness(
       `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       0
     );
+  }
+}
+
+/**
+ * Fetch user's masking history
+ * GET /api/v1/shield/history
+ */
+export async function getHistory(): Promise<any[]> {
+  const url = new URL('/api/v1/shield/history', API_BASE_URL);
+
+  try {
+    const response = await fetch(url.toString(), {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      let backendDetail = '';
+      try {
+        const payload = await response.json();
+        backendDetail = typeof payload?.detail === 'string' ? payload.detail : '';
+      } catch {
+        backendDetail = '';
+      }
+
+      const message = backendDetail || `Failed to fetch history: ${response.statusText}`;
+      throw new ApiError(message, response.status);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`, 0);
+  }
+}
+
+/**
+ * Delete a history item
+ * DELETE /api/v1/shield/history/{id}
+ */
+export async function deleteHistoryItem(id: string): Promise<{ status: string }> {
+  const url = new URL(`/api/v1/shield/history/${id}`, API_BASE_URL);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      let backendDetail = '';
+      try {
+        const payload = await response.json();
+        backendDetail = typeof payload?.detail === 'string' ? payload.detail : '';
+      } catch {
+        backendDetail = '';
+      }
+
+      const message = backendDetail || `Failed to delete item: ${response.statusText}`;
+      throw new ApiError(message, response.status);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`, 0);
   }
 }
 

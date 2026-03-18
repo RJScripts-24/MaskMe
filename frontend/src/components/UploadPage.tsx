@@ -1,4 +1,4 @@
-import { Shield, Upload, ArrowLeft } from 'lucide-react';
+import { Shield, Upload, ArrowLeft, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import ProcessingScreen from './ProcessingScreen';
@@ -7,10 +7,12 @@ import { cloakImage, ApiError } from '../services/api';
 import { ShieldResponse } from '../types/api';
 
 interface UploadPageProps {
+  user: { name: string; email: string; picture: string } | null;
   onBack: () => void;
+  onLogout: () => void;
 }
 
-export default function UploadPage({ onBack }: UploadPageProps) {
+export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [protectedImage, setProtectedImage] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
         originalImage={uploadedImage}
         protectedImage={protectedImage}
         apiResponse={apiResponse}
+        user={user}
         onTryAnother={() => {
           setShowResultScreen(false);
           setUploadedImage(null);
@@ -40,6 +43,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
           setError(null);
         }}
         onBack={onBack}
+        onLogout={onLogout}
       />
     );
   }
@@ -51,6 +55,9 @@ export default function UploadPage({ onBack }: UploadPageProps) {
         file={uploadedFile}
         epsilon={epsilon}
         attackMethod={attackMethod}
+        user={user}
+        onBack={onBack}
+        onLogout={onLogout}
         onComplete={(response) => {
           setShowProcessingScreen(false);
           setApiResponse(response);
@@ -114,26 +121,103 @@ export default function UploadPage({ onBack }: UploadPageProps) {
     }
   };
 
+  const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Header */}
-      <header style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#0a0a0a' }}>
-        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6" style={{ color: '#8b5cf6' }} />
-            <span className="text-xl font-semibold" style={{ color: '#ffffff' }}>MaskMe</span>
+      <motion.nav
+        className="relative z-40"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          height: '72px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="cursor-pointer"
+          onClick={onBack}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.22)' }}
+          >
+            <Shield className="w-4 h-4" style={{ color: '#8b5cf6' }} />
           </div>
+          <span className="text-lg font-semibold">MaskMe</span>
+        </motion.div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <motion.button
             onClick={onBack}
-            className="flex items-center gap-2 transition-colors px-4 py-2 rounded-xl"
-            style={{ color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' }}
-            whileHover={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.07)' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Home</span>
+            <ArrowLeft size={16} />
+            Back to Home
+          </motion.button>
+
+          <div
+            className="hidden sm:flex"
+            style={{
+              alignItems: 'center',
+              gap: '10px',
+              padding: '6px 12px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <img
+              src={user?.picture}
+              alt={primaryName}
+              style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(139,92,246,0.5)' }}
+            />
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>{primaryName}</span>
+          </div>
+
+          <motion.button
+            onClick={onLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(239,68,68,0.2)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <LogOut size={16} />
+            Sign Out
           </motion.button>
         </div>
-      </header>
+      </motion.nav>
 
       {/* Main Content */}
       <main className="py-16 px-6">
@@ -159,7 +243,17 @@ export default function UploadPage({ onBack }: UploadPageProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl mb-3" style={{ color: '#0F172A' }}>
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium mb-6"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                Welcome back, {primaryName}
+              </motion.div>
+            )}
+            <h1 className="text-4xl mb-3 font-semibold" style={{ color: '#ffffff' }}>
               Upload & Protect Your Photo
             </h1>
             <p style={{ color: '#64748B' }}>

@@ -1,12 +1,39 @@
 import { motion } from 'motion/react';
 import { ArrowLeft, Shield, ChevronDown } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 interface AuthPageProps {
-  onSuccess: () => void;
+  onSuccess: (userData: any) => void;
   onBack: () => void;
 }
 
 export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const res = await axios.post(`${API_BASE_URL}/api/v1/auth/google-login`, {
+          token: tokenResponse.access_token,
+        });
+
+        // Save token to localStorage
+        localStorage.setItem('token', res.data.access_token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+
+        toast.success(`Welcome back, ${(res.data.user.name || res.data.user.email || 'friend').split(' ')[0]}!`);
+        onSuccess(res.data.user);
+      } catch (error) {
+        console.error('Login failed:', error);
+        toast.error('Authentication failed. Please try again.');
+      }
+    },
+    onError: () => {
+      toast.error('Google Login failed');
+    },
+  });
+
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
@@ -116,7 +143,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           <div className="flex flex-col items-center gap-8 relative z-10">
             {/* Google Login Button - Stylized like the Hero CTA */}
             <motion.button
-              onClick={onSuccess}
+              onClick={() => login()}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px',
                 padding: '18px 32px', borderRadius: '14px', fontSize: '16px', fontWeight: 600,

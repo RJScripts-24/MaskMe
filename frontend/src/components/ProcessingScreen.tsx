@@ -1,4 +1,4 @@
-import { Shield } from 'lucide-react';
+import { Shield, LogOut, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { cloakImage, ApiError } from '../services/api';
@@ -8,12 +8,16 @@ interface ProcessingScreenProps {
   file: File;
   epsilon?: number;
   attackMethod?: string;
+  user: { name: string; email: string; picture: string } | null;
+  onBack: () => void;
+  onLogout: () => void;
   onComplete: (response: ShieldResponse) => void;
   onError: (error: string) => void;
 }
 
-export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = "FGSM", onComplete, onError }: ProcessingScreenProps) {
+export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = "FGSM", user, onBack, onLogout, onComplete, onError }: ProcessingScreenProps) {
   const [processingStatus, setProcessingStatus] = useState<string>('Uploading image...');
+  const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
 
   useEffect(() => {
     const processImage = async () => {
@@ -66,18 +70,99 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
 
-      {/* Header */}
-      <motion.header
-        className="py-6"
+      <motion.nav
+        className="relative z-40"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          height: '72px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-center gap-2">
-          <Shield className="w-5 h-5" style={{ color: '#8b5cf6' }} />
-          <span className="text-lg font-semibold" style={{ color: '#ffffff' }}>MaskMe</span>
+        <motion.div
+          className="cursor-pointer"
+          onClick={onBack}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.22)' }}
+          >
+            <Shield className="w-4 h-4" style={{ color: '#8b5cf6' }} />
+          </div>
+          <span className="text-lg font-semibold">MaskMe</span>
+        </motion.div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            onClick={onBack}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <ArrowLeft size={16} />
+            Back to Home
+          </motion.button>
+
+          <div
+            className="hidden sm:flex"
+            style={{
+              alignItems: 'center',
+              gap: '10px',
+              padding: '6px 12px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <img
+              src={user?.picture}
+              alt={primaryName}
+              style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(139,92,246,0.5)' }}
+            />
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>{primaryName}</span>
+          </div>
+
+          <motion.button
+            onClick={onLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(239,68,68,0.2)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <LogOut size={16} />
+            Sign Out
+          </motion.button>
         </div>
-      </motion.header>
+      </motion.nav>
 
       {/* Main Content - Centered Card */}
       <div className="flex-1 flex items-center justify-center px-6">
