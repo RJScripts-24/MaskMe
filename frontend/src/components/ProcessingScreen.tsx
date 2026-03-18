@@ -51,24 +51,18 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
   }, [file, epsilon, attackMethod, onComplete, onError]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F8FAFC' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Animated background elements */}
       <motion.div
-        className="fixed top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5 pointer-events-none"
-        style={{ backgroundColor: '#2563EB' }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.05, 0.08, 0.05]
-        }}
+        className="fixed top-20 left-10 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ backgroundColor: '#8b5cf6', opacity: 0.05 }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.06, 0.03] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="fixed bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5 pointer-events-none"
-        style={{ backgroundColor: '#2563EB' }}
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.05, 0.08, 0.05]
-        }}
+        className="fixed bottom-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ backgroundColor: '#8b5cf6', opacity: 0.03 }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.02, 0.05, 0.02] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
 
@@ -80,24 +74,24 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center justify-center gap-2">
-          <Shield className="w-5 h-5" style={{ color: '#2563EB' }} />
-          <span className="text-lg" style={{ color: '#0F172A' }}>MaskMe</span>
+          <Shield className="w-5 h-5" style={{ color: '#8b5cf6' }} />
+          <span className="text-lg font-semibold" style={{ color: '#ffffff' }}>MaskMe</span>
         </div>
       </motion.header>
 
       {/* Main Content - Centered Card */}
       <div className="flex-1 flex items-center justify-center px-6">
         <motion.div
-          className="bg-white border rounded-2xl p-12 max-w-md w-full"
-          style={{ borderColor: '#E2E8F0', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.05)' }}
+          className="rounded-2xl p-12 max-w-md w-full"
+          style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Status Heading */}
           <motion.h1
-            className="text-2xl text-center mb-8"
-            style={{ color: '#0F172A' }}
+            className="text-2xl text-center mb-8 font-medium"
+            style={{ color: '#ffffff' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -116,11 +110,8 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
               {/* Outer glow effect */}
               <motion.div
                 className="absolute inset-0 rounded-full blur-2xl"
-                style={{ backgroundColor: '#2563EB', opacity: 0.1 }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.1, 0.15, 0.1]
-                }}
+                style={{ backgroundColor: '#8b5cf6', opacity: 0.12 }}
+                animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.18, 0.1] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
 
@@ -134,7 +125,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
               >
                 <Shield
                   className="w-full h-full"
-                  style={{ color: '#94A3B8' }}
+                  style={{ color: '#8b5cf6' }}
                   strokeWidth={1}
                   fill="none"
                 />
@@ -150,7 +141,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                   cx="50"
                   cy="50"
                   r="30"
-                  stroke="#2563EB"
+                  stroke="#8b5cf6"
                   strokeWidth="3"
                   fill="none"
                   strokeLinecap="round"
@@ -174,7 +165,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                     key={i}
                     className="absolute w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor: '#2563EB',
+                      backgroundColor: '#8b5cf6',
                       left: '50%',
                       top: '50%'
                     }}
@@ -208,7 +199,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
                   key={`orbit-${i}`}
                   className="absolute w-1.5 h-1.5 rounded-full"
                   style={{
-                    backgroundColor: '#2563EB',
+                    backgroundColor: '#8b5cf6',
                     left: '50%',
                     top: '50%'
                   }}
@@ -237,7 +228,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           {/* Divider Line */}
           <motion.div
             className="h-px w-full mb-6"
-            style={{ backgroundColor: '#E2E8F0' }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
@@ -246,7 +237,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
           {/* Reassurance Message */}
           <motion.p
             className="text-center text-sm"
-            style={{ color: '#64748B' }}
+            style={{ color: '#a1a1aa' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 1 }}
@@ -265,7 +256,7 @@ export default function ProcessingScreen({ file, epsilon = 0.03, attackMethod = 
               <motion.div
                 key={i}
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: '#94A3B8' }}
+                style={{ backgroundColor: '#8b5cf6' }}
                 animate={{
                   opacity: [0.3, 1, 0.3],
                   scale: [0.8, 1.2, 0.8]

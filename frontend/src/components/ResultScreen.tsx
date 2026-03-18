@@ -5,27 +5,27 @@ import { ShieldResponse } from '../types/api';
 import { useState } from 'react';
 import { testRobustness } from '../services/api';
 
-// Shared color constants
-const COLOR_PRIMARY = '#2563EB';
-const COLOR_BG = '#F8FAFC';
-const COLOR_BORDER = '#E2E8F0';
-const COLOR_HEADER_TEXT = '#0F172A';
-const COLOR_SUBTEXT = '#64748B';
-const COLOR_CARD_BG = '#FFFFFF';
-const COLOR_CARD_BORDER = '#E2E8F0';
-const COLOR_ORIG_BG = '#F1F5F9';
-const COLOR_STATUS1_BG = '#FEF2F2';
-const COLOR_STATUS1_BORDER = '#FECACA';
-const COLOR_STATUS1_ICON_BG = '#FEE2E2';
-const COLOR_STATUS1_ICON = '#DC2626';
-const COLOR_STATUS1_TEXT = '#DC2626';
-const COLOR_STATUS1_SUB = '#991B1B';
-const COLOR_STATUS2_BG = '#F0FDF4';
-const COLOR_STATUS2_BORDER = '#BBF7D0';
-const COLOR_STATUS2_ICON_BG = '#DCFCE7';
-const COLOR_STATUS2_ICON = '#16A34A';
-const COLOR_STATUS2_TEXT = '#16A34A';
-const COLOR_STATUS2_SUB = '#166534';
+// Shared color constants - DARK THEME (matching landing page)
+const COLOR_PRIMARY = '#8b5cf6';
+const COLOR_BG = '#0a0a0a';
+const COLOR_BORDER = 'rgba(255,255,255,0.06)';
+const COLOR_HEADER_TEXT = '#ffffff';
+const COLOR_SUBTEXT = '#a1a1aa';
+const COLOR_CARD_BG = '#111111';
+const COLOR_CARD_BORDER = 'rgba(255,255,255,0.06)';
+const COLOR_ORIG_BG = '#0d0d0d';
+const COLOR_STATUS1_BG = 'rgba(239,68,68,0.08)';
+const COLOR_STATUS1_BORDER = 'rgba(239,68,68,0.2)';
+const COLOR_STATUS1_ICON_BG = 'rgba(239,68,68,0.12)';
+const COLOR_STATUS1_ICON = '#f87171';
+const COLOR_STATUS1_TEXT = '#f87171';
+const COLOR_STATUS1_SUB = '#fca5a5';
+const COLOR_STATUS2_BG = 'rgba(16,185,129,0.08)';
+const COLOR_STATUS2_BORDER = 'rgba(16,185,129,0.2)';
+const COLOR_STATUS2_ICON_BG = 'rgba(16,185,129,0.12)';
+const COLOR_STATUS2_ICON = '#34d399';
+const COLOR_STATUS2_TEXT = '#34d399';
+const COLOR_STATUS2_SUB = '#6ee7b7';
 
 interface ResultScreenProps {
   originalImage: string;
@@ -186,34 +186,34 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
   const protectionEffectiveness = ((apiResponse.original_confidence - apiResponse.cloaked_confidence) / apiResponse.original_confidence * 100).toFixed(1);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLOR_BG }}>
+    <div className="min-h-screen" style={{ backgroundColor: COLOR_BG, color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Animated background elements */}
       <motion.div
-        className="fixed top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5 pointer-events-none"
-        style={{ backgroundColor: COLOR_PRIMARY }}
-        animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.08, 0.05] }}
+        className="fixed top-20 left-10 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ backgroundColor: '#8b5cf6', opacity: 0.04 }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.06, 0.03] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="fixed bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5 pointer-events-none"
-        style={{ backgroundColor: COLOR_PRIMARY }}
-        animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.08, 0.05] }}
+        className="fixed bottom-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ backgroundColor: '#8b5cf6', opacity: 0.03 }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.02, 0.05, 0.02] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
       />
       {/* Header */}
-      <header className="bg-white border-b" style={{ borderColor: COLOR_BORDER }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#0a0a0a' }}>
+        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6" style={{ color: COLOR_PRIMARY }} />
-            <span className="text-xl" style={{ color: COLOR_HEADER_TEXT }}>MaskMe</span>
+            <span className="text-xl font-semibold" style={{ color: COLOR_HEADER_TEXT }}>MaskMe</span>
           </div>
           <motion.button
             onClick={onBack}
-            className="flex items-center gap-2 transition-colors"
-            style={{ color: COLOR_SUBTEXT }}
-            whileHover={{ color: COLOR_PRIMARY }}
+            className="flex items-center gap-2 transition-colors px-4 py-2 rounded-xl"
+            style={{ color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' }}
+            whileHover={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.07)' }}
           >
-            <span>Back to Home</span>
+            <span className="text-sm font-medium">Back to Home</span>
           </motion.button>
         </div>
       </header>

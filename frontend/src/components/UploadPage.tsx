@@ -115,22 +115,22 @@ export default function UploadPage({ onBack }: UploadPageProps) {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
-      <header className="bg-white border-b" style={{ borderColor: '#E2E8F0' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#0a0a0a' }}>
+        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6" style={{ color: '#2563EB' }} />
-            <span className="text-xl" style={{ color: '#0F172A' }}>MaskMe</span>
+            <Shield className="w-6 h-6" style={{ color: '#8b5cf6' }} />
+            <span className="text-xl font-semibold" style={{ color: '#ffffff' }}>MaskMe</span>
           </div>
           <motion.button
             onClick={onBack}
-            className="flex items-center gap-2 transition-colors"
-            style={{ color: '#64748B' }}
-            whileHover={{ color: '#2563EB' }}
+            className="flex items-center gap-2 transition-colors px-4 py-2 rounded-xl"
+            style={{ color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' }}
+            whileHover={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.07)' }}
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Home</span>
           </motion.button>
         </div>
       </header>
@@ -139,21 +139,15 @@ export default function UploadPage({ onBack }: UploadPageProps) {
       <main className="py-16 px-6">
         {/* Animated background elements */}
         <motion.div
-          className="fixed top-20 left-10 w-40 h-40 rounded-full blur-3xl opacity-5 pointer-events-none"
-          style={{ backgroundColor: '#2563EB' }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.08, 0.05]
-          }}
+          className="fixed top-20 left-10 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+          style={{ backgroundColor: '#8b5cf6', opacity: 0.04 }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.06, 0.03] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="fixed bottom-20 right-10 w-56 h-56 rounded-full blur-3xl opacity-5 pointer-events-none"
-          style={{ backgroundColor: '#2563EB' }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.05, 0.08, 0.05]
-          }}
+          className="fixed bottom-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+          style={{ backgroundColor: '#8b5cf6', opacity: 0.03 }}
+          animate={{ scale: [1, 1.3, 1], opacity: [0.02, 0.05, 0.02] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
 
@@ -196,11 +190,10 @@ export default function UploadPage({ onBack }: UploadPageProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div
-                className={`bg-white border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] transition-all duration-300 ${isDragging ? 'border-[#2563EB] bg-[#EFF6FF]' : ''
-                  }`}
+                className="border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] transition-all duration-300"
                 style={{
-                  borderColor: isDragging ? '#2563EB' : '#CBD5E1',
-                  backgroundColor: isDragging ? '#EFF6FF' : '#FFFFFF'
+                  borderColor: isDragging ? '#8b5cf6' : 'rgba(255,255,255,0.08)',
+                  backgroundColor: isDragging ? 'rgba(139,92,246,0.05)' : '#111111'
                 }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -220,12 +213,12 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                       >
                         <Upload
                           className="w-16 h-16 mx-auto mb-6"
-                          style={{ color: '#2563EB', opacity: 0.6 }}
-                          strokeWidth={1.5}
+                          style={{ color: '#8b5cf6', opacity: 0.7 }}
+                          strokeWidth={1}
                         />
                       </motion.div>
 
-                      <h2 className="text-2xl mb-6" style={{ color: '#0F172A' }}>
+                      <h2 className="text-2xl mb-6 font-medium" style={{ color: '#ffffff' }}>
                         Upload a face photo
                       </h2>
 
@@ -248,7 +241,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                         </div>
                       </label>
 
-                      <p className="text-sm" style={{ color: '#64748B' }}>
+                      <p className="text-sm" style={{ color: '#71717a' }}>
                         JPG / PNG only
                       </p>
                     </>
@@ -263,114 +256,72 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                       {/* Stealth Slider */}
                       {!protectedImage && (
                         <motion.div
-                          className="mb-6 p-4 rounded-lg"
-                          style={{
-                            backgroundColor: '#F8FAFC',
-                            border: '1px solid #E2E8F0'
-                          }}
+                          className="mb-6 p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <label
-                              htmlFor="stealth-slider"
-                              className="text-sm font-medium"
-                              style={{ color: '#334155' }}
-                            >
+                            <label htmlFor="stealth-slider" className="text-sm font-medium" style={{ color: '#a1a1aa' }}>
                               Stealth Strength
                             </label>
-                            <span
-                              className="text-sm font-mono px-2 py-1 rounded"
-                              style={{
-                                backgroundColor: '#EFF6FF',
-                                color: '#2563EB',
-                                border: '1px solid #BFDBFE'
-                              }}
-                            >
+                            <span className="text-sm font-mono px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#ddd6fe', border: '1px solid rgba(139,92,246,0.2)' }}>
                               {epsilon.toFixed(2)}
                             </span>
                           </div>
                           <input
                             id="stealth-slider"
-                            type="range"
-                            min="0.00"
-                            max="0.10"
-                            step="0.01"
-                            value={epsilon}
+                            type="range" min="0.00" max="0.10" step="0.01" value={epsilon}
                             onChange={(e) => setEpsilon(parseFloat(e.target.value))}
-                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                            style={{
-                              background: `linear-gradient(to right, #2563EB 0%, #2563EB ${(epsilon / 0.10) * 100}%, #E2E8F0 ${(epsilon / 0.10) * 100}%, #E2E8F0 100%)`
-                            }}
+                            className="w-full h-1 rounded-lg appearance-none cursor-pointer"
+                            style={{ background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${(epsilon / 0.10) * 100}%, rgba(255,255,255,0.1) ${(epsilon / 0.10) * 100}%, rgba(255,255,255,0.1) 100%)` }}
                           />
                           <div className="flex justify-between mt-2">
-                            <span className="text-xs" style={{ color: '#64748B' }}>Subtle</span>
-                            <span className="text-xs" style={{ color: '#64748B' }}>Strong</span>
+                            <span className="text-xs" style={{ color: '#525252' }}>Subtle</span>
+                            <span className="text-xs" style={{ color: '#525252' }}>Strong</span>
                           </div>
-                          <p className="text-xs mt-2" style={{ color: '#64748B' }}>
-                            Higher values provide stronger protection but may be more noticeable
-                          </p>
+                          <p className="text-xs mt-2" style={{ color: '#525252' }}>Higher values provide stronger protection but may be more noticeable</p>
                         </motion.div>
                       )}
 
                       {/* Attack Method Dropdown */}
                       {!protectedImage && (
                         <motion.div
-                          className="mb-6 p-4 rounded-lg"
-                          style={{
-                            backgroundColor: '#F8FAFC',
-                            border: '1px solid #E2E8F0'
-                          }}
+                          className="mb-6 p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.15 }}
                         >
-                          <label
-                            htmlFor="attack-method"
-                            className="text-sm font-medium mb-3 block"
-                            style={{ color: '#334155' }}
-                          >
-                            Attack Algorithm
-                          </label>
+                          <label htmlFor="attack-method" className="text-sm font-medium mb-3 block" style={{ color: '#a1a1aa' }}>Attack Algorithm</label>
                           <select
                             id="attack-method"
                             value={attackMethod}
                             onChange={(e) => setAttackMethod(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border appearance-none cursor-pointer transition-colors"
-                            style={{
-                              backgroundColor: '#FFFFFF',
-                              borderColor: '#E2E8F0',
-                              color: '#0F172A'
-                            }}
+                            className="w-full px-4 py-2 rounded-xl border appearance-none cursor-pointer transition-colors"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.1)', color: '#ffffff' }}
                           >
-                            <option value="FGSM">⚡ FGSM (Speed)</option>
-                            <option value="PGD">💪 PGD (Power)</option>
+                            <option value="FGSM" style={{ backgroundColor: '#1a1a1a' }}>⚡ FGSM (Speed)</option>
+                            <option value="PGD" style={{ backgroundColor: '#1a1a1a' }}>💪 PGD (Power)</option>
                           </select>
-                          <p className="text-xs mt-2" style={{ color: '#64748B' }}>
-                            FGSM is fast (single-step), PGD is more powerful (iterative)
-                          </p>
+                          <p className="text-xs mt-2" style={{ color: '#525252' }}>FGSM is fast (single-step), PGD is more powerful (iterative)</p>
                         </motion.div>
                       )}
 
                       {!protectedImage && (
                         <motion.button
                           onClick={handleMaskClick}
-                          className="w-full py-3 rounded-lg mb-3 transition-all"
-                          style={{
-                            backgroundColor: '#2563EB',
-                            color: '#FFFFFF'
-                          }}
-                          whileHover={{ scale: 1.02 }}
+                          className="w-full py-3 rounded-xl mb-3 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                          style={{ backgroundColor: '#ddd6fe', color: '#000000' }}
+                          whileHover={{ scale: 1.02, backgroundColor: '#c4b5fd' }}
                           whileTap={{ scale: 0.98 }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
                         >
-                          <span className="flex items-center justify-center gap-2">
-                            <Shield className="w-5 h-5" strokeWidth={2} />
-                            Mask Photo
-                          </span>
+                          <Shield className="w-5 h-5" strokeWidth={2} />
+                          Mask Photo
                         </motion.button>
                       )}
 
@@ -382,12 +333,8 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                           setApiResponse(null);
                           setError(null);
                         }}
-                        className="w-full px-6 py-2 rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: '#F1F5F9',
-                          color: '#334155',
-                          border: '1px solid #E2E8F0'
-                        }}
+                        className="w-full px-6 py-2 rounded-xl transition-colors text-sm"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.08)' }}
                       >
                         Upload Different Image
                       </button>
@@ -403,8 +350,8 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
-                <Shield className="w-5 h-5" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-                <p className="text-sm" style={{ color: '#64748B' }}>
+                <Shield className="w-4 h-4" style={{ color: '#8b5cf6' }} strokeWidth={1.5} />
+                <p className="text-sm" style={{ color: '#71717a' }}>
                   Your privacy is protected. Images are processed locally when possible.
                 </p>
               </motion.div>
@@ -417,11 +364,8 @@ export default function UploadPage({ onBack }: UploadPageProps) {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div
-                className="rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] border"
-                style={{
-                  backgroundColor: '#F1F5F9',
-                  borderColor: '#E2E8F0'
-                }}
+                className="rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px]"
+                style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 {isProcessing ? (
                   <motion.div
@@ -433,12 +377,10 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     >
-                      <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#2563EB' }} strokeWidth={1.5} />
+                      <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#8b5cf6' }} strokeWidth={1} />
                     </motion.div>
-                    <p style={{ color: '#334155' }}>Processing your image...</p>
-                    <p className="text-sm mt-2" style={{ color: '#64748B' }}>
-                      Applying privacy protection
-                    </p>
+                    <p style={{ color: '#ffffff' }}>Processing your image...</p>
+                    <p className="text-sm mt-2" style={{ color: '#71717a' }}>Applying privacy protection</p>
                   </motion.div>
                 ) : protectedImage ? (
                   <motion.div
@@ -455,29 +397,26 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                       />
                       <motion.div
                         className="absolute top-3 right-3 px-3 py-1.5 rounded-full flex items-center gap-2"
-                        style={{ backgroundColor: '#2563EB' }}
+                        style={{ backgroundColor: '#8b5cf6' }}
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        <Shield className="w-4 h-4" style={{ color: '#FFFFFF' }} strokeWidth={2} />
-                        <span className="text-sm" style={{ color: '#FFFFFF' }}>Protected</span>
+                        <Shield className="w-4 h-4" style={{ color: '#ffffff' }} strokeWidth={2} />
+                        <span className="text-xs font-bold" style={{ color: '#ffffff' }}>PROTECTED</span>
                       </motion.div>
                     </div>
 
                     <motion.button
-                      className="w-full py-3 rounded-lg transition-all"
-                      style={{
-                        backgroundColor: '#2563EB',
-                        color: '#FFFFFF'
-                      }}
-                      whileHover={{ scale: 1.02 }}
+                      className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
+                      style={{ backgroundColor: '#ddd6fe', color: '#000000' }}
+                      whileHover={{ scale: 1.02, backgroundColor: '#c4b5fd' }}
                       whileTap={{ scale: 0.98 }}
                     >
                       Download Protected Image
                     </motion.button>
 
-                    <p className="text-sm mt-4 text-center" style={{ color: '#64748B' }}>
+                    <p className="text-sm mt-4 text-center" style={{ color: '#71717a' }}>
                       Looks the same to you, but AI can't recognize it
                     </p>
                   </motion.div>
@@ -489,18 +428,12 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                     transition={{ duration: 0.6, delay: 0.5 }}
                   >
                     <div
-                      className="w-24 h-24 mx-auto mb-4 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: '#E2E8F0' }}
+                      className="w-24 h-24 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}
                     >
-                      <Shield
-                        className="w-12 h-12"
-                        style={{ color: '#64748B', opacity: 0.4 }}
-                        strokeWidth={1.5}
-                      />
+                      <Shield className="w-12 h-12" style={{ color: '#8b5cf6', opacity: 0.5 }} strokeWidth={1} />
                     </div>
-                    <p style={{ color: '#64748B' }}>
-                      Protected image will appear here
-                    </p>
+                    <p style={{ color: '#71717a' }}>Protected image will appear here</p>
                   </motion.div>
                 )}
               </div>
@@ -513,13 +446,13 @@ export default function UploadPage({ onBack }: UploadPageProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
                 >
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                    <p className="text-sm" style={{ color: '#64748B' }}>Visual Quality</p>
-                    <p style={{ color: '#0F172A' }}>Unchanged</p>
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-xs mb-1" style={{ color: '#71717a' }}>Visual Quality</p>
+                    <p className="font-medium" style={{ color: '#ffffff' }}>Unchanged</p>
                   </div>
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                    <p className="text-sm" style={{ color: '#64748B' }}>AI Protection</p>
-                    <p style={{ color: '#2563EB' }}>Active</p>
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-xs mb-1" style={{ color: '#71717a' }}>AI Protection</p>
+                    <p className="font-medium" style={{ color: '#ddd6fe' }}>Active ✓</p>
                   </div>
                 </motion.div>
               )}
@@ -528,19 +461,17 @@ export default function UploadPage({ onBack }: UploadPageProps) {
 
           {/* Bottom Info Banner */}
           <motion.div
-            className="mt-16 max-w-4xl mx-auto p-6 rounded-xl flex items-center justify-center gap-4"
-            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}
+            className="mt-16 max-w-4xl mx-auto p-6 rounded-2xl flex items-center gap-4"
+            style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Shield className="w-6 h-6" style={{ color: '#2563EB' }} strokeWidth={1.5} />
-            <div>
-              <p style={{ color: '#334155' }}>
-                <strong>Your privacy matters.</strong> Images are processed securely and are never saved on our servers.
-              </p>
-            </div>
+            <Shield className="w-6 h-6 flex-shrink-0" style={{ color: '#8b5cf6' }} strokeWidth={1.5} />
+            <p style={{ color: '#a1a1aa', fontSize: '0.9rem' }}>
+              <span style={{ color: '#ffffff', fontWeight: 500 }}>Your privacy matters.</span> Images are processed securely and are never saved on our servers.
+            </p>
           </motion.div>
         </div>
       </main>
