@@ -1,15 +1,44 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Shield, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Shield, ChevronDown, CircleHelp } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { toast } from 'sonner';
+import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
+import { usePageTutorial } from './tutorial/usePageTutorial';
 
 interface AuthPageProps {
   onSuccess: (userData: any) => void;
   onBack: () => void;
 }
 
+const AUTH_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="auth-nav"]',
+    title: 'Navigation',
+    description: 'Use this navbar to return to home at any time.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="auth-heading"]',
+    title: 'Secure Sign-In',
+    description: 'This section explains why authentication is needed before using personal features.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="auth-card"]',
+    title: 'Sign In Actions',
+    description: 'Use Google sign-in to create your session and unlock your private dashboard.',
+    placement: 'top',
+  },
+];
+
 export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
+  const {
+    isTutorialOpen,
+    startTutorial,
+    closeTutorial,
+  } = usePageTutorial('auth');
+
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -62,6 +91,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
 
       {/* ======================== MINI NAVBAR ======================== */}
       <motion.nav
+        data-tutorial="auth-nav"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 64px', height: '72px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 50 }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,6 +117,20 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
             ))}
           </div>
         </div>
+        <motion.button
+          onClick={startTutorial}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+            backgroundColor: 'rgba(255,255,255,0.06)', color: '#e4e4e7',
+            border: '1px solid rgba(255,255,255,0.12)',
+          }}
+          whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <CircleHelp size={15} />
+          Start Tutorial
+        </motion.button>
       </motion.nav>
 
       {/* ======================== CONTENT ======================== */}
@@ -106,6 +150,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
 
         {/* Main Heading - Matching Hero style but smaller */}
         <motion.div
+          data-tutorial="auth-heading"
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,6 +167,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
 
         {/* Auth Card - Matching Landings Grid card style */}
         <motion.div
+          data-tutorial="auth-card"
           style={{
             backgroundColor: '#111111', borderRadius: '32px',
             padding: '48px', width: '100%', maxWidth: '480px',
@@ -213,6 +259,12 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           </p>
         </motion.div>
       </section>
+
+      <GuidedTutorial
+        isOpen={isTutorialOpen}
+        steps={AUTH_TUTORIAL_STEPS}
+        onClose={closeTutorial}
+      />
 
     </div>
   );

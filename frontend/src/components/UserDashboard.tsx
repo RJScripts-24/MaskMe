@@ -8,9 +8,12 @@ import {
   Trash2,
   Search,
   ArrowRight,
+  CircleHelp,
 } from 'lucide-react';
 import { ApiError, getHistory, deleteHistoryItem } from '../services/api';
 import { toast } from 'sonner';
+import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
+import { usePageTutorial } from './tutorial/usePageTutorial';
 
 interface UserDashboardProps {
   user: { name: string; email: string; picture: string } | null;
@@ -19,12 +22,45 @@ interface UserDashboardProps {
   onBackToHome: () => void;
 }
 
+const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="dashboard-nav"]',
+    title: 'Dashboard Navigation',
+    description: 'Use this bar to return home, relaunch this tutorial, or sign out.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="dashboard-summary"]',
+    title: 'Protection Summary',
+    description: 'This card shows record count, average reduction, and your quick action button.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="dashboard-search"]',
+    title: 'Search Records',
+    description: 'Filter your identity logs by original or masked labels.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="dashboard-logs"]',
+    title: 'Identity Logs',
+    description: 'View, download, and delete each protected image record from this list.',
+    placement: 'top',
+  },
+];
+
 export default function UserDashboard({
   user,
   onUploadClick,
   onLogout,
   onBackToHome,
 }: UserDashboardProps) {
+  const {
+    isTutorialOpen,
+    startTutorial,
+    closeTutorial,
+  } = usePageTutorial('dashboard');
+
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -222,6 +258,7 @@ export default function UserDashboard({
       ))}
 
       <motion.nav
+        data-tutorial="dashboard-nav"
         className="relative z-40"
         style={{
           display: 'flex',
@@ -252,6 +289,26 @@ export default function UserDashboard({
         </motion.div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            onClick={startTutorial}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <CircleHelp size={15} />
+            Start Tutorial
+          </motion.button>
           <div
             className="hidden sm:flex"
             style={{
@@ -320,6 +377,7 @@ export default function UserDashboard({
           </motion.p>
 
           <motion.div
+            data-tutorial="dashboard-summary"
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
@@ -375,7 +433,7 @@ export default function UserDashboard({
       <main className="relative z-10" style={{ padding: '16px 24px 64px' }}>
         <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-            <div className="lg:col-span-2 rounded-2xl p-5" style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div data-tutorial="dashboard-search" className="lg:col-span-2 rounded-2xl p-5" style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-center gap-2 mb-3" style={{ color: '#71717a' }}>
                 <Search size={14} />
                 <span className="text-[10px] font-bold uppercase tracking-[0.18em]">Search Records</span>
@@ -406,6 +464,7 @@ export default function UserDashboard({
             <div className="h-px flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }} />
           </div>
 
+          <div data-tutorial="dashboard-logs">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-28 gap-5">
               <div className="w-14 h-14 rounded-full border-4 border-violet-500/10 border-t-violet-500 animate-spin" />
@@ -511,8 +570,15 @@ export default function UserDashboard({
               ))}
             </div>
           )}
+          </div>
         </div>
       </main>
+
+      <GuidedTutorial
+        isOpen={isTutorialOpen}
+        steps={DASHBOARD_TUTORIAL_STEPS}
+        onClose={closeTutorial}
+      />
 
     </div>
   );

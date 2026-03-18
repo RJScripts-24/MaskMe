@@ -1,10 +1,11 @@
-import { Shield, Upload, ArrowLeft, LogOut } from 'lucide-react';
+import { Shield, Upload, ArrowLeft, LogOut, CircleHelp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import ProcessingScreen from './ProcessingScreen';
 import ResultScreen from './ResultScreen';
-import { ApiError } from '../services/api';
 import { ShieldResponse } from '../types/api';
+import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
+import { usePageTutorial } from './tutorial/usePageTutorial';
 
 interface UploadPageProps {
   user: { name: string; email: string; picture: string } | null;
@@ -12,7 +13,40 @@ interface UploadPageProps {
   onLogout: () => void;
 }
 
+const UPLOAD_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="upload-nav"]',
+    title: 'Upload Page Navigation',
+    description: 'Use this navbar to go back, relaunch tutorial, or sign out.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="upload-dropzone"]',
+    title: 'Image Upload Area',
+    description: 'Drag and drop images here or browse files. You can upload up to 5 images.',
+    placement: 'right',
+  },
+  {
+    selector: '[data-tutorial="upload-preview"]',
+    title: 'Preview and Results',
+    description: 'Protected output, progress, and batch results appear in this panel.',
+    placement: 'left',
+  },
+  {
+    selector: '[data-tutorial="upload-banner"]',
+    title: 'Privacy Notes',
+    description: 'This section summarizes the privacy guarantees for your uploaded data.',
+    placement: 'top',
+  },
+];
+
 export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) {
+  const {
+    isTutorialOpen,
+    startTutorial,
+    closeTutorial,
+  } = usePageTutorial('upload');
+
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -185,6 +219,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <motion.nav
+        data-tutorial="upload-nav"
         className="relative z-40"
         style={{
           display: 'flex',
@@ -215,6 +250,26 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
         </motion.div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            onClick={startTutorial}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <CircleHelp size={15} />
+            Start Tutorial
+          </motion.button>
           <motion.button
             onClick={onBack}
             style={{
@@ -338,6 +393,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* LEFT COLUMN - Upload Area */}
             <motion.div
+              data-tutorial="upload-dropzone"
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -551,6 +607,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
 
             {/* RIGHT COLUMN - Preview Area */}
             <motion.div
+              data-tutorial="upload-preview"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -689,6 +746,7 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
 
           {/* Bottom Info Banner */}
           <motion.div
+            data-tutorial="upload-banner"
             className="mt-16 max-w-4xl mx-auto p-6 rounded-2xl flex items-center gap-4"
             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
             initial={{ opacity: 0, y: 20 }}
@@ -703,6 +761,11 @@ export default function UploadPage({ user, onBack, onLogout }: UploadPageProps) 
           </motion.div>
         </div>
       </main>
+      <GuidedTutorial
+        isOpen={isTutorialOpen}
+        steps={UPLOAD_TUTORIAL_STEPS}
+        onClose={closeTutorial}
+      />
     </div>
   );
 }

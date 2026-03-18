@@ -9,11 +9,7 @@ class AttackEngine:
     def __init__(self):
         self.device = torch.device(settings.DEVICE)
         self.weights = ResNet50_Weights.IMAGENET1K_V1
-        self.model = models.resnet50(weights=self.weights)
-        self.model.to(self.device)
-        self.model.eval()
-        
-        # Get ImageNet class names
+        self._model = None
         self.class_names = self.weights.meta["categories"]
         
         self.preprocess = transforms.Compose([
@@ -21,6 +17,18 @@ class AttackEngine:
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
+
+    def _ensure_model_loaded(self):
+        if self._model is None:
+            model = models.resnet50(weights=self.weights)
+            model.to(self.device)
+            model.eval()
+            self._model = model
+
+    @property
+    def model(self):
+        self._ensure_model_loaded()
+        return self._model
 
     def _get_prediction(self, tensor):
         with torch.no_grad():

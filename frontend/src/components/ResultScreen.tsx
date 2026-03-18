@@ -1,9 +1,11 @@
 
-import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText, Zap, MessageCircle, Wind, Globe, LogOut, ArrowLeft, Search } from 'lucide-react';
+import { Shield, X, Check, Download, Upload, Eye, EyeOff, FileText, Zap, MessageCircle, Wind, Globe, LogOut, ArrowLeft, Search, CircleHelp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ShieldResponse, VerifyResponse } from '../types/api';
 import { useState } from 'react';
 import { testRobustness, verifyMasking } from '../services/api';
+import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
+import { usePageTutorial } from './tutorial/usePageTutorial';
 
 // Shared color constants - DARK THEME (matching landing page)
 const COLOR_PRIMARY = '#8b5cf6';
@@ -49,6 +51,33 @@ interface StatusCardProps {
   delay: number;
 }
 
+const RESULT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="result-nav"]',
+    title: 'Result Navigation',
+    description: 'Use this bar to return, relaunch tutorial, or sign out.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="result-comparison"]',
+    title: 'Image Comparison',
+    description: 'Compare original and protected output, and optionally inspect the noise map.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="result-status"]',
+    title: 'Protection Metrics',
+    description: 'These cards summarize confidence reduction and visual-quality preservation.',
+    placement: 'top',
+  },
+  {
+    selector: '[data-tutorial="result-actions"]',
+    title: 'Download and Next Steps',
+    description: 'Download the protected image, generate an audit report, or process another image.',
+    placement: 'top',
+  },
+];
+
 function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, subtitleColor, delay }: StatusCardProps) {
   return (
     <motion.div
@@ -76,6 +105,12 @@ function StatusCard({ icon, bg, border, iconBg, title, titleColor, subtitle, sub
 }
 
 export default function ResultScreen({ originalImage, protectedImage, apiResponse, user, onTryAnother, onBack, onLogout }: ResultScreenProps) {
+  const {
+    isTutorialOpen,
+    startTutorial,
+    closeTutorial,
+  } = usePageTutorial('result');
+
   // State for X-Ray Mode toggle
   const [showNoise, setShowNoise] = useState(false);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
@@ -236,6 +271,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
       />
       <motion.nav
+        data-tutorial="result-nav"
         className="relative z-40"
         style={{
           display: 'flex',
@@ -266,6 +302,26 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
         </motion.div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            onClick={startTutorial}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <CircleHelp size={15} />
+            Start Tutorial
+          </motion.button>
           <motion.button
             onClick={onBack}
             style={{
@@ -357,7 +413,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
           </motion.div>
 
           {/* Image Comparison Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div data-tutorial="result-comparison" className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* LEFT COLUMN - Original Image */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -519,7 +575,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
           </div>
 
           {/* Verification / Status Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <div data-tutorial="result-status" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
             <StatusCard
               icon={<X className="w-6 h-6" style={{ color: COLOR_STATUS1_ICON }} strokeWidth={2.5} />}
               bg={COLOR_STATUS1_BG}
@@ -612,6 +668,7 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
 
           {/* Action Buttons Section */}
           <motion.div
+            data-tutorial="result-actions"
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -832,6 +889,11 @@ export default function ResultScreen({ originalImage, protectedImage, apiRespons
           </motion.div>
         </div>
       </main>
+      <GuidedTutorial
+        isOpen={isTutorialOpen}
+        steps={RESULT_TUTORIAL_STEPS}
+        onClose={closeTutorial}
+      />
     </div>
   );
 }

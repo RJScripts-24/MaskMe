@@ -1,8 +1,10 @@
-import { Shield, LogOut, ArrowLeft } from 'lucide-react';
+import { Shield, LogOut, ArrowLeft, CircleHelp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { cloakImage, ApiError } from '../services/api';
 import { ShieldResponse } from '../types/api';
+import GuidedTutorial, { TutorialStep } from './tutorial/GuidedTutorial';
+import { usePageTutorial } from './tutorial/usePageTutorial';
 
 interface ProcessingScreenProps {
   file: File;
@@ -18,7 +20,28 @@ interface ProcessingScreenProps {
   onError: (error: string) => void;
 }
 
+const PROCESSING_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="processing-nav"]',
+    title: 'Processing Navigation',
+    description: 'Use this bar to return, relaunch tutorial, or sign out.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="processing-card"]',
+    title: 'Live Processing Status',
+    description: 'This card shows the current progress while MaskMe protects your image.',
+    placement: 'top',
+  },
+];
+
 export default function ProcessingScreen({ file, files = [], epsilon = 0.03, attackMethod = "FGSM", privacyMode = 'standard', user, onBack, onLogout, onComplete, onBatchComplete, onError }: ProcessingScreenProps) {
+  const {
+    isTutorialOpen,
+    startTutorial,
+    closeTutorial,
+  } = usePageTutorial('processing', { autoStart: false });
+
   const [processingStatus, setProcessingStatus] = useState<string>('Uploading image...');
   const primaryName = (user?.name || user?.email || 'User').split(' ')[0];
 
@@ -96,6 +119,7 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
       />
 
       <motion.nav
+        data-tutorial="processing-nav"
         className="relative z-40"
         style={{
           display: 'flex',
@@ -126,6 +150,26 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
         </motion.div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <motion.button
+            onClick={startTutorial}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <CircleHelp size={15} />
+            Start Tutorial
+          </motion.button>
           <motion.button
             onClick={onBack}
             style={{
@@ -192,6 +236,7 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
       {/* Main Content - Centered Card */}
       <div className="flex-1 flex items-center justify-center px-6">
         <motion.div
+          data-tutorial="processing-card"
           className="rounded-2xl p-12 max-w-md w-full"
           style={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -385,6 +430,11 @@ export default function ProcessingScreen({ file, files = [], epsilon = 0.03, att
 
       {/* Bottom spacing */}
       <div className="py-6"></div>
+      <GuidedTutorial
+        isOpen={isTutorialOpen}
+        steps={PROCESSING_TUTORIAL_STEPS}
+        onClose={closeTutorial}
+      />
     </div>
   );
 }

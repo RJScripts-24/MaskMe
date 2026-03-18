@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, ArrowRight, ChevronRight, Shield, EyeOff, Upload, Download, Zap, LogOut, User as UserIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { ChevronDown, ArrowRight, ChevronRight, Shield, EyeOff, Upload, Download, Zap, LogOut, CircleHelp } from 'lucide-react';
+import { motion } from 'motion/react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { toast, Toaster } from 'sonner';
 import UploadPage from './components/UploadPage';
 import AuthPage from './components/AuthPage';
 import UserDashboard from './components/UserDashboard';
+import GuidedTutorial, { TutorialStep } from './components/tutorial/GuidedTutorial';
+import { usePageTutorial } from './components/tutorial/usePageTutorial';
 
 // Image imports
 import img1 from './assets/img1.png';
@@ -18,6 +20,39 @@ import img7 from './assets/img7.png';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+const HOME_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    selector: '[data-tutorial="home-nav"]',
+    title: 'Main Navigation',
+    description: 'Use this top bar to move around the product and access key actions quickly.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="home-hero"]',
+    title: 'Welcome Section',
+    description: 'This section introduces MaskMe and explains what the product does.',
+    placement: 'bottom',
+  },
+  {
+    selector: '[data-tutorial="home-cta"]',
+    title: 'Start Quickly',
+    description: 'Use these call-to-action buttons to open your account and begin masking images.',
+    placement: 'top',
+  },
+  {
+    selector: '[data-tutorial="home-why"]',
+    title: 'Why MaskMe',
+    description: 'This area explains the core privacy and security benefits you get.',
+    placement: 'top',
+  },
+  {
+    selector: '[data-tutorial="home-how"]',
+    title: 'How It Works',
+    description: 'This section shows the full upload-to-protection flow in three simple steps.',
+    placement: 'top',
+  },
+];
+
 interface User {
   email: string;
   name: string;
@@ -27,6 +62,11 @@ interface User {
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'upload' | 'auth' | 'dashboard'>('home');
   const [user, setUser] = useState<User | null>(null);
+  const {
+    isTutorialOpen: isHomeTutorialOpen,
+    startTutorial: startHomeTutorial,
+    closeTutorial: closeHomeTutorial,
+  } = usePageTutorial('home');
 
   // Check for existing session on mount
   useEffect(() => {
@@ -78,6 +118,7 @@ export default function App() {
         >
           {/* ======================== NAVBAR ======================== */}
           <motion.nav
+            data-tutorial="home-nav"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 64px', height: '72px', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'relative', zIndex: 100 }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -117,6 +158,20 @@ export default function App() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <motion.button
+                onClick={startHomeTutorial}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+                  backgroundColor: 'rgba(255,255,255,0.06)', color: '#e4e4e7',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                }}
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.11)', scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <CircleHelp size={15} />
+                Start Tutorial
+              </motion.button>
               {user ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -171,7 +226,7 @@ export default function App() {
           </motion.nav>
 
           {/* ======================== HERO ======================== */}
-          <section style={{ position: 'relative', overflow: 'hidden', padding: '110px 24px 80px', textAlign: 'center' }}>
+          <section data-tutorial="home-hero" style={{ position: 'relative', overflow: 'hidden', padding: '110px 24px 80px', textAlign: 'center' }}>
             {/* Ambient glow */}
             <motion.div
               style={{
@@ -207,6 +262,7 @@ export default function App() {
               </motion.h1>
 
               <motion.div
+                data-tutorial="home-cta"
                 style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center', marginBottom: '72px' }}
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -660,7 +716,7 @@ export default function App() {
           </section>
 
           {/* ======================== WHY MASKME SECTION ======================== */}
-          <section style={{ padding: '60px 64px', backgroundColor: '#0f0f0f' }}>
+          <section data-tutorial="home-why" style={{ padding: '60px 64px', backgroundColor: '#0f0f0f' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
               <motion.h2
                 style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
@@ -707,7 +763,7 @@ export default function App() {
           </section>
 
           {/* ======================== HOW IT WORKS ======================== */}
-          <section style={{ padding: '80px 64px', backgroundColor: '#0a0a0a' }}>
+          <section data-tutorial="home-how" style={{ padding: '80px 64px', backgroundColor: '#0a0a0a' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
               <motion.h2
                 style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 600, marginBottom: '56px', letterSpacing: '-0.02em', textAlign: 'center' }}
@@ -826,6 +882,11 @@ export default function App() {
               </div>
             </div>
           </footer>
+          <GuidedTutorial
+            isOpen={isHomeTutorialOpen}
+            steps={HOME_TUTORIAL_STEPS}
+            onClose={closeHomeTutorial}
+          />
         </div>
       )}
     </GoogleOAuthProvider>
